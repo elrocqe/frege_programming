@@ -1,0 +1,50 @@
+module Exercises4 where
+
+awesome = ["Papuchon", "curry", ":)"]
+also = ["Quake", "The Simons"]
+allAwesome = [awesome, also]
+
+-- 1
+-- length :: [a] -> Int
+
+-- 2
+a = length [1, 2, 3, 4, 5]
+b = length [(1, 2), (2, 3), (3, 4)]
+c = length allAwesome
+d = length (concat allAwesome)
+
+-- 3
+-- length x -> Int -> not Fractional
+
+-- 4
+first = 6 / 3
+second = 6 `div` (length [1, 2, 3])
+-- second = div 6 (length [1, 2, 3])
+
+-- 5
+solution5 :: Bool
+solution5 = 2 + 3 == 5
+
+-- 6
+x = 5
+value6 = x + 3 == 5
+
+-- 7
+value7_1 = length allAwesome == 2
+-- value7_2 = length [1, 'a', 3, 'b']
+value7_3 = length allAwesome + length awesome
+value7_4 = (8 == 8) && ('b' < 'a')
+-- value7_5 = (8 == 8) && 9
+
+-- 8
+-- reverse :: [a] -> [a]
+isPalindrome :: (Eq a) => [a] -> Bool
+isPalindrome x = x == reverse x
+
+-- 9
+myAbs :: Integer -> Integer
+myAbs x = if (x >= 0) then x else -x
+
+
+f :: (a, b) -> (c, d) -> ((b, d), (a, c))
+f x y = ((snd x,snd y),(fst x, fst y))

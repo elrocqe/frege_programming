@@ -1,0 +1,226 @@
+module Exercises5 where
+
+-- simple example
+example = 1
+
+-- 1
+-- a)
+a1 = (* 9) 6
+-- 54
+-- (* 9) 6 :: Num a => a
+
+-- b)
+b1 = head [(0,"doge"),(1,"kitteh")]
+-- (0,"doge")
+-- head [(0,"doge"),(1,"kitteh")] :: Num a => (a, [Char])
+
+-- c)
+c1 = head [(0 :: Integer ,"doge"),(1,"kitteh")] 
+--(0, "doge")
+-- head [(0 :: Integer ,"doge"),(1,"kitteh")] :: (Integer, [Char])
+
+-- d)
+d1 = if False then True else False
+-- False
+-- if False then True else False :: Bool
+
+-- e)
+e1 = length [1, 2, 3, 4, 5]
+-- 5
+-- length [1, 2, 3, 4, 5] :: Int
+
+-- f)
+f1 = (length [1, 2, 3, 4]) > (length "TACOCAT")
+-- False
+-- (length [1, 2, 3, 4]) > (length "TACOCAT") :: Bool
+
+-- 2
+x2 = 5
+y2 = x2 + 5
+w2 = y2 * 10
+w2 :: Num a => a
+
+-- 3
+x3 = 5
+y3 = x3 + 5
+z3 y3 = y3 * 10
+z3 :: Num a => a -> a
+
+-- 4
+x4 = 5
+y4 = x4 + 5
+f4 = 4 / y4
+f4 :: Fractional a => a
+
+-- 5
+x5 = "Julie"
+y5 = " <3 "
+z5 = "Haskell"
+f5 = x5 ++ y5 ++ z5
+f5 :: [Char]
+
+
+-- Does it compile?
+
+-- 1.
+bigNum = (^) 5 $ 10
+wahoo = bigNum
+
+-- 2.
+x_1 = print
+y_1 = print "woohoo!" 
+z_1 = x_1 "hello world"
+
+
+-- 3.
+a_3 = (+)
+b_3 = 5
+c_3 = a_3 10
+d_3 = c_3 200
+
+-- c = a 10
+
+
+-- 4.
+c_4 = 2
+b_4 = 10000 * c_4
+a_4 = 12 + b_4
+
+
+-- Type variable or specific type constructor?
+    -- fully polymorphic type variable
+    -- constrained polymorphic type variable
+    -- concrete type con- structor
+{-
+f1 :: Num a => a -> b -> Int -> Int
+-- constrained polymorphic (Num)
+-- fully polymorphic
+-- concrete
+-- concrete
+
+f2 :: zed -> Zed -> Blah
+-- fully polymorphic
+-- fully polymorphic
+-- concrete
+-- concrete
+
+f3 :: Enum b => a -> b -> C
+-- fully polymorphic
+-- constrained polymorphic (Num)
+-- concrete
+
+f4 :: f -> g -> C
+-- fully polymorphic
+-- fully polymorphic
+-- concrete
+-}
+
+
+-- Write a type signature
+-- 1.
+functionH :: [a] -> a
+functionH (x:_) = x
+-- 2.
+functionC :: Ord a => a -> a -> Bool
+functionC x y =
+    if (x > y) then True else False
+-- 3.
+functionS :: (a, b) -> b
+functionS (x, y) = y
+
+-- Given a type, write the function
+myFunc :: (x -> y) -> (y -> z) -> c -> (a, x) -> (a, z)
+myFunc xToY yToZ _ (a, x) = undefined
+
+i :: a -> a
+i x = x
+
+c :: a -> b -> a
+c x _ = x
+
+c'' :: b -> a -> b
+c'' x _ = x
+
+c' :: a -> b -> b
+c' _ y = y
+
+r :: [a] -> [a]
+-- r s = tail s
+r s = init s
+
+co :: (b -> c) -> (a -> b) -> a -> c
+co bToC aToB a = bToC $ aToB a
+
+a :: (a -> c) -> a -> a
+a _ a = a
+
+a' :: (a -> b) -> a -> b
+a' aToB a = aToB a
+
+-- Fix it
+
+fstString :: [Char] -> [Char]
+fstString x = x ++ " in the rain"
+
+sndString :: [Char] -> [Char]
+sndString x = x ++ " over the rainbow"
+        
+sing = if (x < y) then fstString x else sndString y
+    where x = "Singin"
+          y = "Somewhere"
+
+main :: IO ()
+main = do
+    print (1 + 2)
+    putStrLn "10"
+    print (negate (-1))
+    print ((+) 0 blah)
+        where blah = negate 1
+
+-- Type-Kwon-Do
+data Woot
+
+data Blah
+
+f_example :: Woot -> Blah
+f_example = undefined
+g_example :: (Blah, Woot) -> (Blah, Blah)
+g_example (b, w) = (b, f_example w)
+    
+
+-- 1.
+f :: Int -> String
+f = undefined
+g :: String -> Char
+g = undefined
+h :: Int -> Char
+h a = g $ f a 
+
+-- 2.
+data A
+data B
+data C
+q :: A -> B
+q = undefined
+w :: B -> C
+w = undefined
+e :: A -> C
+e x = w $ q x
+
+
+--3.
+data X
+data Y
+data Z
+xz :: X -> Z
+xz = undefined
+yz :: Y -> Z
+yz = undefined
+xform :: (X, Y) -> (Z, Z)
+xform (a,b) = (xz a, yz b)
+
+-- 4.
+munge :: (x -> y) -> (y -> (w, z)) -> x -> w
+munge xToY yToTuple x = fst $ yToTuple $ xToY x
+
+

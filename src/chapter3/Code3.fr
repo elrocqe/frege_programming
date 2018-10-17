@@ -1,0 +1,66 @@
+module Code3 where 
+
+-- print1.hs
+main1 :: IO ()
+main1 = putStrLn "hello world!"
+
+-- print2.hs
+main2 :: IO ()
+main2 = do
+    putStrLn "Count to four for me:"
+    putStr   "one, two"
+    putStr   ", three, and"
+    putStrLn " four!"
+
+-- print3.hs
+
+myGreeting :: String
+myGreeting = "hello" ++ " world!" 
+
+hello :: String
+hello = "hello" 
+
+world :: String
+world = "world!"
+
+main3 :: IO ()
+main3 = do
+    putStrLn myGreeting
+    putStrLn secondGreeting
+    where secondGreeting = concat [hello, " ", world]
+
+-- TopOrLocal
+topLevelFunction :: Integer -> Integer
+topLevelFunction x =
+    x + woot + topLevelValue
+    where
+        woot :: Integer
+        woot = 10
+
+topLevelValue :: Integer
+topLevelValue = 5
+
+
+-- print3flipped.hs
+main3flipped :: IO ()
+main3flipped = do
+    putStrLn myGreeting
+    putStrLn secondGreeting
+    where secondGreeting = (++) hello ((++) " " world)
+
+    -- could've been:
+    --     secondGreeting =
+    --       hello ++ " " ++ world
+
+-- print3broken.hs
+
+printSecond :: IO()
+printSecond = do
+    putStrLn greeting
+
+main3broken :: IO()
+main3broken = do
+    putStrLn greeting
+    printSecond
+
+greeting = "Yarrrrr"

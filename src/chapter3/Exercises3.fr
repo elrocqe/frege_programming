@@ -1,0 +1,66 @@
+module Exercises3 where 
+
+area d = pi * (r * r) where r = d / 2
+
+
+{-
+
+concat [[1, 2, 3], [4, 5, 6]]
+
+-- ++ [1, 2, 3] [4, 5, 6]
+(++) [1, 2, 3] [4, 5, 6]
+
+(++) "hello" " world"
+
+--["hello" ++ " world]
+["hello" ++ " world"]
+
+--4 !! "hello"
+"hello" !! 4
+
+(!!) "hello" 4
+
+--take "4 lovely"
+take 4 "lovely"
+
+take 3 "awesome"
+
+-}
+
+-- building functions
+-- 1 + 2
+-- a
+addExclamationMark :: String -> String
+addExclamationMark a = a ++ "!"
+
+-- b
+takeFourth :: String -> Char
+takeFourth a = a !! 4
+
+-- c
+drop9 :: String -> String
+drop9 a = drop 9 a
+
+-- 3
+thirdLetter :: String -> Char
+thirdLetter x = x !! 3
+
+-- 4
+predefinedString = "Curry is awesome"
+
+letterIndex :: Int -> Char
+letterIndex x = predefinedString !! x
+
+-- 5
+rvrs :: String -> String
+rvrs x = drop 9 x ++ (take 4(drop 5 x)) ++ take 5 x
+
+-- 6 
+
+rvrs1 :: String -> String
+rvrs1 x = drop 9 x ++ (take 4(drop 5 x)) ++ take 5 x
+    
+main :: IO ()
+-- main = print (rvrs1 "Curry is awesome")
+main = print $ rvrs1 "Curry is awesome"
+    
