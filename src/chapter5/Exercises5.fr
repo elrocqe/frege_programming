@@ -37,8 +37,8 @@ f1 = (length [1, 2, 3, 4]) > (length "TACOCAT")
 -- 2
 x2 = 5
 y2 = x2 + 5
+w2 :: Int -- if you want not to unify on Int but want to use Num a => a, then you must use fromInt on the int values
 w2 = y2 * 10
-w2 :: Num a => a
 
 -- 3
 x3 = 5
@@ -47,17 +47,18 @@ z3 y3 = y3 * 10
 z3 :: Num a => a -> a
 
 -- 4
-x4 = 5
-y4 = x4 + 5
+x4 = fromInt 5
+y4 = fromInt ( x4 + 5)
+f4 :: Real a => a
 f4 = 4 / y4
-f4 :: Fractional a => a
 
 -- 5
 x5 = "Julie"
 y5 = " <3 "
 z5 = "Haskell"
+f5 :: String
 f5 = x5 ++ y5 ++ z5
-f5 :: [Char]
+
 
 
 -- Does it compile?
@@ -160,27 +161,27 @@ a' aToB a = aToB a
 -- Fix it
 
 fstString :: [Char] -> [Char]
-fstString x = x ++ " in the rain"
+fstString x = x ++ unpacked " in the rain"
 
 sndString :: [Char] -> [Char]
-sndString x = x ++ " over the rainbow"
+sndString x = x ++ unpacked " over the rainbow"
         
 sing = if (x < y) then fstString x else sndString y
-    where x = "Singin"
-          y = "Somewhere"
+    where x = unpacked "Singin"
+          y = unpacked "Somewhere"
 
 main :: IO ()
 main = do
+    blah = negate 1
     print (1 + 2)
     putStrLn "10"
     print (negate (-1))
-    print ((+) 0 blah)
-        where blah = negate 1
+    print ((+) 0 blah)         
 
 -- Type-Kwon-Do
-data Woot
+data Woot = Woot
 
-data Blah
+data Blah = Blah
 
 f_example :: Woot -> Blah
 f_example = undefined
@@ -197,9 +198,9 @@ h :: Int -> Char
 h a = g $ f a 
 
 -- 2.
-data A
-data B
-data C
+data A = A
+data B = B
+data C = C
 q :: A -> B
 q = undefined
 w :: B -> C
@@ -209,9 +210,9 @@ e x = w $ q x
 
 
 --3.
-data X
-data Y
-data Z
+data X = X
+data Y = Y
+data Z = Z
 xz :: X -> Z
 xz = undefined
 yz :: Y -> Z
