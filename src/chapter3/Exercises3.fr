@@ -1,31 +1,29 @@
 module Exercises3 where 
 
+pi = 22/7
+
 area d = pi * (r * r) where r = d / 2
 
-
-{-
-
-concat [[1, 2, 3], [4, 5, 6]]
+x1 = concat [[1, 2, 3], [4, 5, 6]]
 
 -- ++ [1, 2, 3] [4, 5, 6]
-(++) [1, 2, 3] [4, 5, 6]
+x2 = (++) [1, 2, 3] [4, 5, 6]
 
-(++) "hello" " world"
+x3 = (++) "hello" " world"
 
 --["hello" ++ " world]
-["hello" ++ " world"]
+x4 = ["hello" ++ " world"]
 
 --4 !! "hello"
-"hello" !! 4
+x5 = unpacked "hello" !! 4
 
-(!!) "hello" 4
+x6 = (!!) (unpacked "hello") 4
 
 --take "4 lovely"
-take 4 "lovely"
+x7 = take 4 "lovely"
 
-take 3 "awesome"
+x8 = take 3 "awesome"
 
--}
 
 -- building functions
 -- 1 + 2
@@ -35,7 +33,7 @@ addExclamationMark a = a ++ "!"
 
 -- b
 takeFourth :: String -> Char
-takeFourth a = a !! 4
+takeFourth a = unpacked a !! 4
 
 -- c
 drop9 :: String -> String
@@ -43,13 +41,13 @@ drop9 a = drop 9 a
 
 -- 3
 thirdLetter :: String -> Char
-thirdLetter x = x !! 3
+thirdLetter x = unpacked x !! 3
 
 -- 4
 predefinedString = "Curry is awesome"
 
 letterIndex :: Int -> Char
-letterIndex x = predefinedString !! x
+letterIndex x = unpacked predefinedString !! x
 
 -- 5
 rvrs :: String -> String
