@@ -25,9 +25,10 @@ world = "world!"
 
 main3 :: IO ()
 main3 = do
+    secondGreeting = concat [hello, " ", world]    
     putStrLn myGreeting
     putStrLn secondGreeting
-    where secondGreeting = concat [hello, " ", world]
+     
 
 -- TopOrLocal
 topLevelFunction :: Integer -> Integer
@@ -44,9 +45,9 @@ topLevelValue = 5
 -- print3flipped.hs
 main3flipped :: IO ()
 main3flipped = do
+    secondGreeting = (++) hello ((++) " " world)
     putStrLn myGreeting
     putStrLn secondGreeting
-    where secondGreeting = (++) hello ((++) " " world)
 
     -- could've been:
     --     secondGreeting =
