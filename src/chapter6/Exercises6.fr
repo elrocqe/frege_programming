@@ -1,0 +1,163 @@
+module Exercises6 where
+
+import Data.List
+
+-- chapter exercises
+
+-- Does it typecheck?
+x :: Int -> Int
+x blah = blah + 20
+
+-- printIt :: IO ()
+-- printIt = putStrLn (show x)
+    
+-- 1.
+data Person = Person Bool
+--printPerson :: Person -> IO ()
+-- printPerson person = putStrLn (show person)
+-- Person does not implement show
+
+-- 2.
+data Mood = Blah | Woot
+derive Show Mood
+-- settleDown x = if x == Woot then Blah else x
+-- Woot does not implement Eq
+
+--4.
+type Subject = String
+type Verb = String
+type Object = String
+data Sentence = Sentence Subject Verb Object
+derive Eq Sentence
+derive Show Sentence
+
+s1 = Sentence "dogs" "drool" -- partial function, not printable
+s2 = Sentence "Julie" "loves" "dogs"
+
+-- Given a datatype declaration, what can we do?
+
+data Rocks = Rocks String
+derive Eq Rocks
+derive Show Rocks
+data Yeah = Yeah Bool
+derive Eq Yeah
+derive Show Yeah
+data Papu = Papu Rocks Yeah
+derive Eq Papu
+derive Show Papu
+
+-- 1.
+--phew = Papu "chases" True
+-- incorrect types
+phew = Papu (Rocks "chases") (Yeah True)
+
+-- 2.
+truth = Papu (Rocks "chomskydoz") (Yeah True)
+
+-- 3.
+equalityForall :: Papu -> Papu -> Bool
+equalityForall p p' = p == p'
+
+-- 4.
+--comparePapus :: Papu -> Papu -> Bool
+--comparePapus p p' = p > p'
+-- Papu is not an instance of Ord
+
+-- Match the types
+-- 1.a.
+i :: Num a => a
+i=1
+--2.
+-- a)
+f2a :: Float
+f2a = 1.0
+-- b)
+--f2b :: Num a => a
+--f2b = 1.0
+-- Inferred type (Real) is more constraint than annotated type (Num)
+-- 3.
+-- a)
+f3a :: Float
+f3a = 1.0
+-- b)
+f3b :: Real a => a
+f3b = 1.0
+-- FREGE the analog of Fractional in Frege is Real
+-- 4.
+--Hint for the following: type :info RealFrac in your REPL.
+-- a)
+f4a :: Float
+f4a = 1.0
+-- b)
+-- f4b :: RealFrac a => a
+f4b = 1.0
+-- TODO RealFrac in Frege?
+-- 5.
+-- a)
+freud::a->a
+freud x = x
+-- b)
+freud1 :: Ord a => a -> a
+freud1 x = x
+-- 6.
+-- a)
+freud'::a->a
+freud' x = x
+-- b)
+freud'1 :: Int -> Int
+freud'1 x = x
+--7.
+-- a)
+myX = 1::Int
+sigmund :: Int -> Int
+sigmund x = myX
+-- b)
+-- sigmund1 :: a -> a
+-- sigmund1 x = myX
+-- actual return type is Int, but defined return type is a (too generic)
+
+-- 8.
+-- a)
+myX8=1::Int
+sigmund' :: Int -> Int
+sigmund' x = myX8
+-- b)
+--sigmund'1 :: Num a => a -> a
+--sigmund'1 x = myX8
+-- actual return type is Int, but defined as Num a
+-- 9.
+-- a)
+-- You’ll need to import sort from Data.List.
+jung :: Ord a => [a] -> a
+jung xs = head (sort xs)
+-- b)
+jung1 :: [Int] -> Int
+jung1 xs = head (sort xs)
+
+-- 10.
+-- a)
+young :: [Char] -> Char 
+young xs = head (sort xs)
+-- b)
+young1 :: Ord a => [a] -> a
+young1 xs = head (sort xs)
+
+-- 11.
+-- a)
+mySort :: [Char] -> [Char]
+mySort = sort
+signifier :: [Char] -> Char
+signifier xs = head (mySort xs)
+-- b)
+--signifier1 :: Ord a => [a] -> a
+--signifier1 xs = head (mySort xs)
+-- mySort is only defined for [Char], not [a]
+
+-- Type-Kwon-Do Two: Electric Typealoo
+-- 1.
+chk :: Eq b => (a -> b) -> a -> b -> Bool
+chk f a b = f a == b
+-- Hint: use some arithmetic operation to
+-- combine values of type 'b'. Pick one.
+arith :: Num b => (a -> b) -> Integer -> a -> b
+arith f n a = f a + fromInteger n

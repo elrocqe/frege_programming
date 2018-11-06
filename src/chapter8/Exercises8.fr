@@ -1,0 +1,103 @@
+module Exercises8 where
+
+main :: IO ()
+main = print digitToWordTest
+    
+-- Reviewing curring
+cattyConny :: String -> String -> String
+cattyConny x y = x ++ " mrow " ++ y
+
+-- fill in the types
+flippy :: String -> String -> String
+flippy = flip cattyConny
+
+appedCatty :: String -> String
+appedCatty = cattyConny "woops"
+
+frappe :: String -> String
+frappe = flippy "haha"
+
+r1 = appedCatty "woohoo!"
+-- "mrow woops mrow woohoo!" 
+
+r2 = frappe "1"
+-- "1 mrow haha"
+
+r3 = frappe (appedCatty "2")
+-- "woops mrow 2 mrow haha"
+
+r4 = appedCatty (frappe "blue")
+-- "woops mrow blue mrow haha"
+
+r5 = cattyConny (cattyConny "green" (appedCatty "blue"))
+-- "woops mrow blue mrow haha"
+
+r6 = cattyConny (flippy "Pugs" "are") "awesome"
+-- are mrow Pugs mrow awesome
+
+-- Recursion
+-- 2.
+mySum :: (Eq a, Num a) => a -> a
+mySum 0 = 0
+mySum n = undefined
+
+-- 3.
+myMult :: (Integral a) => a -> a -> a
+myMult x y = undefined
+-- TODO
+
+
+
+-- Fixing dividedBy
+
+ -- data DividedResult = Result Integer | DividedByZero
+ 
+-- TODO
+
+-- McCarthy 91 function
+
+mc91 :: Int -> Int
+mc91 n = if (n > 100) then n - 10 else mc91 (mc91 (n+11))
+
+mc91' n
+    | (n > 100) = n - 10
+    | otherwise = mc91 (mc91 (n+11))
+    
+mc91Result = map mc91 [95..110]
+-- [91,91,91,91,91,91,91,92,93,94,95,96,97,98,99,100]
+
+
+-- Numbers into words
+
+import Data.List (intersperse)
+
+digitToWord :: Int -> String
+digitToWord n = case n of
+				0 -> "zero"
+				1 -> "one"
+				2 -> "two"
+				3 -> "three"
+				4 -> "four"
+				5 -> "five"
+				6 -> "six"
+				7 -> "seven"
+				8 -> "eight"
+				9 -> "nine"
+
+digitToWordTest = map digitToWord [0,1,2,3,4,5,6,7,8,9]
+
+digits :: Int -> [Int]
+digits n
+    | n == 0    = [0]
+    | otherwise = n : digits (div n 10) ++ [mod n 10]
+
+digitsTest = digits 12324546
+--  [1,2,3,2,4,5,4,6]
+
+wordNumber :: Int -> String
+wordNumber = undefined
+-- wordNumber n = concat ( (intersperse '-' (map digitToWord (digits n))))
+-- TODO string handling
+
+wordNumberResult = wordNumber 12324546
+-- "one-two-three-two-four-five-four-six"

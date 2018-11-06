@@ -1,0 +1,67 @@
+module Exercises7 where
+
+-- Let’s write code
+-- 1.
+tensDigit :: Integral a => a -> a
+tensDigit x = d
+    where xLast = x `div` 10
+          d = xLast `mod` 10
+
+-- a.
+tensDigit' :: Integral a => a -> a
+tensDigit' x = d
+    where (xLast, r)  = x `divMod` 10
+          (q, d)      = xLast `divMod` 10
+-- TODO Check compile error when using _
+
+-- b.
+-- yes, outer type remains the same
+
+--c.
+hunsD :: Integral a => a -> a
+hunsD x = d2
+    where d     = x `div` 10
+          xLast = d `div` 10
+          d2    = xLast `mod` 10    
+          
+-- 2.
+foldBool :: a -> a -> Bool -> a
+foldBool =
+	error
+       "Error: Need to implement foldBool!"
+       
+foldBool1 :: a -> a -> Bool -> a
+foldBool1 x y b = 
+	case b of
+		True -> x
+		False -> y
+
+foldBool2 :: a -> a -> Bool -> a
+foldBool2 x y b
+   | b = x
+   | otherwise = y 
+
+foldBool3 :: a -> a -> Bool -> a
+foldBool3 x _ False = x
+foldBool3 _ y True = y
+
+-- 3.
+g :: (a -> b) -> (a, c) -> (b, c)
+g f (x,y) = (f x, y)
+
+-- 4.
+roundTrip :: (Show a, Read a) => a -> a
+roundTrip a = read (show a)
+
+main = do
+	print (roundTrip 4)
+	print (id 4)
+	print (roundTrip 4 :: Int) -- 6.
+
+-- 5.
+roundTripPF :: (Show a, Read a) => a -> a
+roundTripPF = read . show
+
+-- 6.
+roundTrip1 :: (Show a, Read b) => a -> b
+roundTrip1 = read . show

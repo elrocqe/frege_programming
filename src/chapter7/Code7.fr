@@ -1,0 +1,296 @@
+module Code7 where
+
+-- Setting parameters
+
+myNum :: Num a => a
+myNum = 1
+-- [1]
+myVal :: Num a => a -> a
+myVal f = f + myNum
+-- [2]
+stillAFunction :: [a] -> [a] -> [a] -> [a]
+stillAFunction a b c = a ++ b ++ c
+
+-- Binding variables to values
+
+
+addOne :: Integer -> Integer
+addOne x = x + 1
+
+--bindExp :: Integer -> String
+--bindExp :: Show b => a -> String
+-- bindExp x = let x = 10 in "x: " ++ show x ++ " y: " ++ show y
+        
+        
+-- Exercise: Grab Bag
+-- 3.
+-- a) Rewrite the f function in the where clause.
+addOneIfOdd n = case odd n of
+    True -> f n
+    False -> n
+    where f n = n + 1
+addOneIfOdd' n = case odd n of
+    True -> f n
+    False -> n
+    where f = \n -> n + 1
+
+-- b) Rewrite the following to use anonymous lambda syntax:
+addFive x y = (if x > y then y else x) + 5
+addFive' = \x -> \y -> (if x > y then y else x) + 5
+
+-- c) Rewrite the following so that it doesn’t use anonymous lambda syntax:
+mflip :: (b->c->a) -> c -> b -> a
+mflip f = \x -> \y -> f y x
+
+mflip' :: (b->c->a) -> c -> b -> a
+mflip' f x y = f y x
+
+-- Pattern matching against data constructors
+
+newtype Username =
+  Username String
+newtype AccountNumber =
+  AccountNumber Integer
+data User =
+    UnregisteredUser
+  | RegisteredUser Username AccountNumber
+
+printUser :: User -> IO ()
+printUser UnregisteredUser =  putStrLn "UnregisteredUser"
+printUser (RegisteredUser
+          (Username name)
+          (AccountNumber acctNum)) =
+          putStrLn $ name ++ " " ++ show acctNum
+          
+data WherePenguinsLive = Galapagos | Antarctica | Australia | SouthAfrica | SouthAmerica
+derive Eq WherePenguinsLive
+derive Show WherePenguinsLive
+
+data Penguin = Peng WherePenguinsLive
+derive Eq Penguin
+derive Show Penguin
+
+isSouthAfrica' :: WherePenguinsLive -> Bool
+isSouthAfrica' SouthAfrica = True
+isSouthAfrica' _           = False
+
+gimmeWhereTheyLive :: Penguin -> WherePenguinsLive
+gimmeWhereTheyLive (Peng whereitlives) = whereitlives
+
+humboldt = Peng SouthAmerica
+gentoo = Peng Antarctica
+macaroni = Peng Antarctica
+little = Peng Australia
+galapagos = Peng Galapagos
+
+galapagosPenguin :: Penguin -> Bool
+galapagosPenguin (Peng Galapagos) = True
+galapagosPenguin _ = False
+antarcticPenguin :: Penguin -> Bool
+antarcticPenguin (Peng Antarctica) = True
+antarcticPenguin _ = False
+
+antarcticOrGalapagos :: Penguin -> Bool
+antarcticOrGalapagos p = (galapagosPenguin p) || (antarcticPenguin p)
+
+f :: (a, b) -> (c, d) -> ((b, d), (a, c))
+f x y = ((snd x, snd y), (fst x, fst y))
+
+
+f' :: (a, b) -> (c, d) -> ((b, d), (a, c))
+f' (a, b) (c, d) = ((b, d), (a, c))
+
+-- matchingTuples1.hs
+addEmUp2 :: Num a => (a, a) -> a
+addEmUp2 (x, y) = x + y
+-- addEmUp2 could also be written like so
+
+addEmUp2Alt :: Num a => (a, a) -> a
+addEmUp2Alt tup = (fst tup) + (snd tup)
+
+fst3 :: (a, b, c) -> a
+fst3 (x, _, _) = x
+
+third3 :: (a, b, c) -> c
+third3 (_, _, x) = x
+
+-- Exercises: Variety Pack
+-- 1.
+k :: (a,b) -> a
+k (x, y) = x
+k1 :: Int
+k1 = k ((4-1), 10)
+k2 :: String
+k2 = k ("three", (1 + 2))
+k3 :: Int
+k3 = k (3, True)
+
+-- 2.
+-- Remember: Tuples have the same syntax for their type constructors and their data constructors.
+fTriple :: (a, b, c) -> (d, e, f) -> ((a, d), (c, f))
+fTriple (a, b, c) (d, e, f) = ((a, d), (c, f))
+
+-- case expressions
+
+funcZ x =
+    case x + 1 == 1 of
+        True -> "AWESOME"
+        False -> "wut"
+
+pal xs =
+    case xs == reverse xs of
+        True -> "yes"
+        False -> "no"
+
+pal' xs = case y of
+    True -> "yes"
+    False -> "no"
+    where y = xs == reverse xs
+    
+greetIfCool :: String -> IO ()
+greetIfCool coolness = 
+    case cool of 
+        True -> putStrLn "eyyyyy. What's shakin'?"
+        False -> putStrLn "pshhhh."
+    where cool = coolness == "downright frosty yo"
+            
+-- Exercises: Case Practice
+-- 1.
+functionC x y = if (x > y) then x else y
+functionC' x y = case (x > y) of
+    True  -> x
+    False -> y
+-- 2.
+ifEvenAdd2 n = if even n then (n+2) else n
+ifEvenAdd2' n = case (even n) of
+    True  -> (n+2)
+    False -> n
+--3.
+nums x =
+    case compare x 0 of
+        LT -> -1
+        GT -> 1
+        
+        
+--7.6 Higher Order Functions
+
+myFlip :: (a -> b -> c) -> b -> a -> c
+myFlip f = \ x y -> f y x
+
+
+returnLast :: a -> b -> c -> d -> d
+returnLast _ _ _ d = d
+
+returnLast' :: a -> (b -> (c -> (d -> d)))
+returnLast' _ _ _ d = d
+
+-- returnBroke :: (((a -> b) -> c) -> d) -> d
+returnBroke :: a -> b -> c -> d -> d
+returnBroke _ _ _ d = d
+
+returnAfterApply :: (a -> b) -> a -> c -> b
+returnAfterApply f a c = f a
+
+data Employee = Coder | Manager | Veep | CEO
+derive Eq Employee
+derive Ord Employee
+derive Show Employee
+
+reportBoss :: Employee -> Employee -> IO ()
+reportBoss e e' = putStrLn $ show e ++
+    " is the boss of " ++
+    show e'
+
+codersRuleCEOsDrool :: Employee -> Employee -> Ordering
+codersRuleCEOsDrool Coder Coder = EQ
+codersRuleCEOsDrool Coder _ = GT
+codersRuleCEOsDrool _ Coder = LT
+codersRuleCEOsDrool e e' = compare e e'
+
+employeeRank :: ( Employee -> Employee -> Ordering ) -> Employee -> Employee -> IO ()
+employeeRank f e e' = case f e e' of
+    GT -> reportBoss e e'
+    EQ -> putStrLn "Neither employee\
+    \ is the boss"
+    LT -> (flip reportBoss) e e'
+    
+    
+-- Exercises: Artful Dodgy
+dodgy x y = x + y * 10
+oneIsOne = dodgy 1
+oneIsTwo = (flip dodgy) 2
+
+f1 = dodgy 1 0
+-- 1
+f2 = dodgy 1 1
+-- 11
+f3 = dodgy 2 2
+-- 22
+f4 = dodgy 1 2
+-- 21
+f5 = dodgy 2 1
+-- 12
+f6 = oneIsOne 1
+-- 11
+f7 = oneIsOne 2
+-- 21
+f8 = oneIsTwo 1
+-- 21
+f9 = oneIsTwo 2
+-- 22
+f10 = oneIsOne 3
+-- 31
+f11 = oneIsTwo 3
+-- 23
+
+
+-- Guards
+
+myAbs :: Integer -> Integer
+myAbs x = if x < 0 then (-x) else x
+
+-- Writing Blocking Guards
+myAbs' :: Integer -> Integer
+myAbs' x | x < 0 = (-x) | otherwise = x
+
+bloodNa :: Integer -> String
+bloodNa x
+    | x < 135 = "too low"
+    | x > 145 = "too high"
+    | otherwise = "just right"
+    
+    
+isRight :: (Num a, Eq a) => a -> a -> a -> String
+isRight a b c
+    | a^2 + b^2 == c^2 = "RIGHT ON"
+    | otherwise = "not right"
+
+dogYrs :: Integer -> Integer
+dogYrs x
+    | x <= 0    = 0
+    | x <= 1    = x * 15
+    | x <= 2    = x * 12
+    | x <= 4    = x * 8
+    | otherwise = x * 6
+    
+avgGrade :: (Real a, Ord a) => a -> Char -- Frege: Real instead of Fractional
+avgGrade x 
+    | y >= 0.9  = 'A' 
+    | y >= 0.8  ='B' 
+    | y >= 0.7  ='C'
+    | y >= 0.59 = 'D'
+    | y < 0.59  = 'F'
+     where y = x / 100
+     
+-- Exercises: Guard Duty
+
+-- 3.
+pal3 xs
+    | xs == reverse xs = True
+    | otherwise = False
+    
+-- 6.
+numbers x
+    | x < 0  = -1
+    | x == 0 = 0
+    | x > 0  = 1

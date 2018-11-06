@@ -1,0 +1,130 @@
+module Code6 where
+
+-- TODO instance compile errors
+
+-- Eq Instances
+-- 1
+data TisAnInteger = TisAn Integer
+instance Eq TisAnInteger where
+    (==) (TisAn a) (TisAn b) = a == b
+
+
+    
+-- 2
+data TwoIntegers = Two Integer Integer
+instance Eq TwoIntegers where
+    (==) (Two a b) (Two a' b') = (a == a') &&  (b == b')
+
+--3 
+data StringOrInt = TisAnInt Int | TisAString String
+
+instance Eq StringOrInt where
+    (==) (TisAnInt a) (TisAnInt a')     = a == a'
+    (==) (TisAString a) (TisAString a') = a == a'
+    (==) _ _                            = False
+-- 4
+data Pair a = Pair a a
+instance Eq a => Eq (Pair a) where
+    (==) (Pair a b) (Pair a' b') = (a == a') &&  (b == b')
+-- 5
+data Tuple a b = Tuple a b
+instance (Eq a, Eq b) => Eq (Tuple a b) where
+    (==) (Tuple a b) (Tuple a' b') = (a == a') &&  (b == b')
+--6
+data Which a = ThisOne a | ThatOne a
+instance Eq a => Eq (Which a) where
+    (==) (ThisOne a) (ThisOne a') = a == a'
+    (==) (ThatOne a) (ThatOne a') = a == a'
+    (==) _ _                      = False
+-- 7
+data EitherOr a b = Hello a | Goodbye b
+instance (Eq a, Eq b) => Eq (EitherOr a b) where
+    (==) (Hello a) (Hello a')     = a == a'
+    (==) (Goodbye a) (Goodbye a') = a == a'
+    (==) _ _                      = False
+
+
+-- chapter example
+data DayOfWeek = Mon | Tue | Weds | Thu | Fri | Sat | Sun
+derive Ord DayOfWeek
+derive Show DayOfWeek
+
+-- day of week and numerical day of month
+data Date =
+    Date DayOfWeek Int
+  
+instance Eq DayOfWeek where 
+    (==) Mon Mon   = True
+    (==) Tue Tue   = True
+    (==) Weds Weds = True
+    (==) Thu Thu   = True
+    (==) Fri Fri   = True
+    (==) Sat Sat   = True
+    (==) Sun Sun   = True
+    (==) _ _       = False
+
+
+instance Eq Date where
+    (==) (Date weekday dayOfMonth) (Date weekday' dayOfMonth') = weekday == weekday' && dayOfMonth == dayOfMonth'
+        
+-- Will They Work?
+-- 1.
+e1 = max (length [1, 2, 3]) (length [8, 9, 10, 11, 12])
+-- ok, correct types and precedence
+
+-- 2.
+e2 = compare (3 * 4) (3 * 5)
+-- ok, correct types and precedence
+
+-- 3.
+-- e3 = compare "Julie" True
+-- no comparable types
+
+-- 4.
+e4 = (5 + 3) > (3 + 6)
+-- ok, correct types and precedence
+
+
+-- 6.12 Instances are dispatched by type
+
+class Numberish a where
+fromNumber :: Integer -> a
+toNumber :: a -> Integer
+
+-- pretend newtype is data for now
+newtype Age = Age Integer
+derive Age Eq 
+derive Age Show
+
+-- TODO compile errors
+instance Numberish Age where
+fromNumber n = Age n
+toNumber (Age n) = n
+
+newtype Year =
+Year Integer
+derive Year Eq
+derive Year Show
+
+instance Numberish Year where
+fromNumber n = Year n toNumber (Year n) = n
+
+sumNumberish :: Numberish a => a -> a -> a
+sumNumberish a a' = fromNumber summed
+    where integerOfA = toNumber a
+        integerOfAPrime = toNumber a'
+        summed = integerOfA + integerOfAPrime
+        
+class Numberish a where
+fromNumber :: Integer -> a
+toNumber :: a -> Integer
+defaultNumber :: a
+
+instance Numberish Age where
+fromNumber n = Age n
+toNumber (Age n) = n
+defaultNumber = Age 65
+instance Numberish Year where fromNumber n = Year n
+toNumber (Year n) = n
+defaultNumber = Year 1988
+

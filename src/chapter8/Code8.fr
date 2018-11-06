@@ -1,0 +1,85 @@
+module Code8 where
+
+fourFactorial :: Integer
+fourFactorial = 4 * 3 * 2 * 1
+
+brokenFact1 :: Integer -> Integer
+brokenFact1 n = n * brokenFact1 (n - 1)
+
+factorial :: Integer -> Integer
+factorial 0 = 1
+factorial n = n * factorial (n - 1)
+
+fcomp = take 5 . filter odd . enumFrom $ 3
+
+-- (.) :: (b -> c) -> (a -> b) -> a -> c
+-- (.) f g = \x -> f (g x)
+
+inc :: Num a => a -> a
+inc = (+1)
+
+three = inc . inc . inc $ 0
+-- different syntax, same thing
+three' = (inc . inc . inc) 0
+
+incTimes :: (Eq a, Num a) => a -> a -> a
+incTimes 0 n = n
+incTimes times n = 1 + (incTimes (times - 1) n)
+
+
+applyTimes :: (Eq a, Num a) => a -> (b -> b) -> b -> b
+applyTimes 0 f b = b
+applyTimes n f b = f (applyTimes (n-1) f b)
+
+incTimes' :: (Eq a, Num a) => a -> a -> a
+incTimes' times n = applyTimes times (+1) n
+-- When we do, we can make the composition more obvious in applyTimes:
+applyTimes2 :: (Eq a, Num a) => a -> (b -> b) -> b -> b
+applyTimes2 0 f b = b
+applyTimes2 n f b = f . applyTimes (n-1) f $ b
+
+-- 8.3 Bottom
+
+f_ex :: Bool -> Int
+f_ex False = 0
+f_ex _ = error $ "*** Exception: "
+			++ "Non-exhaustive"
+			++ "patterns in function f"
+
+f :: Bool -> Maybe Int
+f False = Just 0
+f _ = Nothing
+
+-- 8.4 Fibonacci numbers
+fibonacci :: Integral a => a -> a
+fibonacci 0 = 0
+fibonacci 1 = 1
+fibonacci x = fibonacci (x - 1) + fibonacci (x - 2)
+
+-- 8.5 Integral division from scratch
+
+dividedBy :: Integer -> Integer -> Integer
+dividedBy = div
+-- changes to
+-- TODO type compile error
+ type Numerator = Integer
+ type Denominator = Integer
+ type Quotient = Integer
+ dividedBySyn :: Numerator -> Denominator -> Quotient
+ dividedBySyn = div
+ 
+ dividedByRec :: Integral a => a -> a -> (a, a)
+ dividedByRec num denom = go num denom 0
+where go n d count
+	| n < d = (count, n)
+	| otherwise = go (n - d) d (count + 1)
+
+
+-- Definitions
+
+-- not recursive
+lessOne :: Int -> Int
+lessOne n = n - 1
+-- recursive
+zero :: Int -> Int zero 0 = 0
+zero n = zero (n - 1)
