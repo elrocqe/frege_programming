@@ -1,0 +1,225 @@
+module Code9 where
+
+main :: IO ()
+main = print (map unpacked myWordsResult)
+--main = print $ "Are they equal? " ++ show (myLines sentences == shouldEqual)
+
+-- 9.3
+myHead :: [t] -> t
+myHead (x : _) = x
+
+myTail :: [a] -> [a]
+myTail [] = []
+myTail (_ : xs) = xs
+
+safeTail :: [a] -> Maybe [a]
+safeTail [] = Nothing
+safeTail (x:[]) = Nothing
+safeTail (_:xs) = Just xs
+
+safeHead :: [a] -> Maybe a
+safeHead [] = Nothing
+safeHead (x:_) = Just x
+
+-- Exercise: EnumFromTo
+
+eftBool :: Bool -> Bool -> [Bool]
+eftBool False False = [False]
+eftBool False True = [False, True]
+eftBool True False = []
+eftBool True True = [True]
+
+eftOrd :: Ordering -> Ordering -> [Ordering]
+eftOrd LT LT = [LT]
+eftOrd LT EQ = [LT, EQ]
+eftOrd LT GT = [LT, EQ, GT]
+eftOrd EQ LT = []
+eftOrd EQ EQ = [EQ]
+eftOrd EQ GT = [EQ, GT]
+eftOrd GT LT = []
+eftOrd GT EQ = []
+eftOrd GT GT = [GT]
+
+eftInt :: Int -> Int -> [Int]
+eftInt x y
+    | x == y    = [x]
+    | x > y     = []
+    | otherwise = [x] ++ eftInt (succ x) y
+
+eftChar :: Char -> Char -> [Char]
+eftChar x y
+    | x == y    = [x]
+    | x > y     = []
+    | otherwise = [x] ++ eftChar (succ x) y
+
+
+-- Exercises: Thy Fearful Symmetry
+-- 1.
+
+--myWords :: [Char] -> [[Char]]
+myWords :: [Char] -> [String]
+myWords [] = []
+myWords (' ':xs) = myWords xs
+myWords xs = (packed (takeWhile (/=' ') xs)) : myWords (dropWhile (/=' ') xs)
+
+myWordsResult =  myWords (unpacked "sheryl wants fun")
+-- FREGE Char/String handling
+-- ["sheryl", "wants", "fun"]
+
+-- 2.
+firstSen = "Tyger Tyger, burning bright\n"
+secondSen = "In the forests of the night\n"
+thirdSen = "What immortal hand or eye\n"
+fourthSen = "Could frame thy fearful symmetry?"
+sentences = firstSen ++ secondSen ++ thirdSen ++ fourthSen
+     -- putStrLn sentences -- should print
+     -- Tyger Tyger, burning bright
+     -- In the forests of the night
+     -- What immortal hand or eye
+     -- Could frame thy fearful symmetry?
+     
+-- Implement this
+--myLines :: String -> [String]
+myLines :: [Char] -> [String]
+myLines ('\n':xs) = myLines xs
+myLines xs = ( packed (takeWhile (/='\n') xs)) : myLines (dropWhile (/='\n') xs)
+-- FREGE Char/String handling
+
+
+-- What we want 'myLines sentences' -- to equal
+shouldEqual =
+       [ "Tyger Tyger, burning bright"
+       , "In the forests of the night"
+       , "What immortal hand or eye"
+       , "Could frame thy fearful symmetry?"
+       ]
+
+-- 3.
+splitAt :: Char -> [Char] -> [String]
+splitAt _ [] = []
+splitAt c (x:xs) = if (x == c) then splitAt c xs else (w : splitAt c l)
+    where w = (packed (takeWhile (/=c) xs))
+          l = (dropWhile (/=c) xs)
+
+myWords' = splitAt ' '
+myLines' = splitAt '\n'
+
+-- 9.7 List comprehensions
+-- Exercises: Comprehend Thy Lists
+mySqr = [x^2 | x <- [1..10]]
+
+a = [x | x <- mySqr, rem x 2 == 0]
+b = [(x, y) | x <- mySqr, y <- mySqr, x < 50, y > 50]
+c = take 5 [ (x, y) | x <- mySqr, y <- mySqr, x < 50, y > 50 ]
+
+-- Exercises: Square Cube
+mySqr1 = [x^2 | x <- [1..5]]
+myCube1 = [y^3 | y <- [1..5]]
+
+-- 1.
+myTuples1 = [(x,y) | x <- mySqr1, y <- myCube1]
+
+-- 2.
+myTuples2 = [(x,y) | x <- mySqr1, y <- myCube1, x < 50, y < 50]
+
+-- 3.
+myTuples3 n = take n [(x,y) | x <- mySqr1, y <- myCube1, x < 50, y < 50]
+
+
+-- Exercises: Bottom Madness
+f1 = [x^y | x <- [1..5], y <- [2, undefined]]
+-- frege.runtime.Undefined: undefined
+
+f2 = take 1 $ [x^y | x <- [1..5], y <- [2, undefined]]
+-- [1]
+f3 = sum [1, undefined, 3]
+-- frege.runtime.Undefined: undefined
+
+f4 = length [1, 2, undefined]
+-- 3
+
+f5 = length $ [1, 2, 3] ++ undefined
+-- frege.runtime.Undefined: undefined
+
+f6 = take 1 $ filter even [1, 2, 3, undefined]
+-- [2]
+
+f7 = take 1 $ filter even [1, 3, undefined]
+-- frege.runtime.Undefined: undefined
+
+f8 = take 1 $ filter odd [1, 3, undefined]
+-- [1] 
+
+f9 = take 2 $ filter odd [1, 3, undefined]
+-- [1,3]
+f10 = take 3 $ filter odd [1, 3, undefined]
+-- frege.runtime.Undefined: undefined
+
+
+-- Exercises: More Bottoms
+-- 1.
+f11 = take 1 $ map (+1) [undefined, 2, 3]
+--  frege.runtime.Undefined: undefined
+
+-- 2. Will the following expression return a value?
+f12 = take 1 $ map (+1) [1, undefined, 3]
+-- [2]
+
+-- 3. Will the following expression return a value?
+f13 = take 2 $ map (+1) [1, undefined, 3]
+--  frege.runtime.Undefined: undefined
+
+-- 4. What does the following mystery function do? What is its type? Describe it (to yourself or a loved one) in standard English and then test it out in the REPL to make sure you were correct.
+itIsMystery xs = map (\x -> elem x (toList "aeiou")) xs
+--FREGE Char/String handling
+
+-- 5. What will be the result of the following functions:
+-- a)
+f15a = map (^2) [1..10]
+-- [1,4,9,16,25,36,49,64,81,100]
+-- b)
+f15b = map minimum [[1..10], [10..20], [20..30]] -- n.b. `minimum` is not the same function -- as the `min` that we used before
+-- [1,10,20]
+-- c)
+f15c = map sum [[1..5], [1..5], [1..5]]
+-- [15,15,15]
+
+
+-- 9.10 Filtering lists of values
+-- Exercises: Filtering
+
+-- 1.
+myFilter = filter (\x -> rem x 3 == 0)
+myFilterTest = myFilter [1 .. 30]
+-- 2.
+myLength = (length . myFilter) [1 .. 30]
+-- 3.
+
+myFilter' :: String -> [String]
+myFilter' = (filter isNotAnArticle) . words
+    where isNotAnArticle "the" = False
+          isNotAnArticle "a" = False
+          isNotAnArticle "an" = False
+          isNotAnArticle _ = True
+myFilterTest' = myFilter' "the brown dog was a goof"
+
+
+-- 9.11 Zipping lists
+-- Zipping exercises
+
+-- 1.
+myZip :: [a] -> [b] -> [(a,b)]
+myZip [] _ = []
+myZip _ [] = []
+myZip (x:xs) (y:ys) = (x,y) : myZip xs ys 
+
+-- 2.
+myZipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+myZipWith _ [] _ = []
+myZipWith _ _ [] = []
+myZipWith f (x:xs) (y:ys) = (f x y) : (myZipWith f xs ys)
+
+-- 3.
+myZip' :: [a] -> [b] -> [(a,b)]
+myZip' = myZipWith (,)
+

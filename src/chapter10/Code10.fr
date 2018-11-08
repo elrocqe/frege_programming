@@ -1,0 +1,50 @@
+module Code10 where
+
+validLength = length [1,2,3,4,undefined]
+invalidLength = length ([1,2,3,4] ++ undefined)
+
+-- TODO failing import
+
+import Data.Time
+
+-- Database Processing
+
+data DatabaseItem = DbString String
+                  | DbNumber Integer
+                  | DbDate   UTCTime
+derive Eq DatabaseItem
+derive Ord DatabaseItem
+derive Show DatabaseItem
+
+theDatabase :: [DatabaseItem]
+theDatabase = [ DbDate (UTCTime
+	(fromGregorian 1911 5 1)
+	(secondsToDiffTime 34123)) , DbNumber 9001
+	, DbString "Hello, world!"
+	, DbDate (UTCTime
+	            (fromGregorian 1921 5 1)
+	            (secondsToDiffTime 34123))
+	]
+
+-- 1.
+filterDbDate :: [DatabaseItem] -> [UTCTime]
+filterDbDate xs = [date | (DbDate date) <- xs]
+
+-- 2.
+filterDbNumber :: [DatabaseItem] -> [Integer]
+filterDbNumber xs = [number | (DbNumber number) <- xs]
+
+-- 3.
+mostRecent :: [DatabaseItem] -> UTCTime
+mostRecent = maximum . filterDbDate
+
+-- 4.
+sumDb :: [DatabaseItem] -> Integer
+sumDb = sum . filterDbNumber
+
+lengthDb :: [DatabaseItem] -> Integer
+lengthDb = fromIntegral . length . filterDbNumber
+-- 5.
+avgDb :: [DatabaseItem] -> Double
+avgDb xs = fromIntegral (sumDb xs) / fromIntegral (lengthDb xs)
+

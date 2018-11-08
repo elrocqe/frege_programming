@@ -1,0 +1,97 @@
+module Exercises10 where
+
+main :: IO ()
+main = print (seekritFunc ("This is a test sencence"))
+
+-- Warm-up and review
+-- 1.
+stops  = "pbtdkg"
+vowels = "aeiou"
+
+-- a.
+triples = [(x,y,z) | x <- stops, y <- vowels, z <- stops]
+
+-- b.
+triples' = [(x,y,z) | x <- stops, y <- vowels, z <- stops, x == 'p' ]
+
+-- c.
+nouns  = ["Coder", "Time", "Computer"]
+verbs = ["eat", "sleep", "think", "speak"]
+
+nounVerbNoun = [(x,y,z) | x <- nouns, y <- verbs, z <- nouns ]
+
+--2.
+seekritFunc :: String -> Int
+seekritFunc x = div (sum (map length (words x))) (length (words x))
+-- average word length in a sentence
+
+-- 3.
+seekritFunc' x = (fromIntegral totalLength) / (fromIntegral numberOfWords)
+    where
+        totalLength = sum (map length (words x))
+        numberOfWords = length (words x)
+        
+-- Rewriting functions using folds
+
+-- direct recursion, not using (&&)
+myAnd :: [Bool] -> Bool
+myAnd [] = True
+myAnd (x:xs) = if x == False then False else myAnd xs
+-- direct recursion, using (&&)
+myAnd1 :: [Bool] -> Bool
+myAnd1 [] = True
+myAnd1 (x:xs) = x && myAnd xs
+-- fold, not point-free
+-- in the folding function
+myAnd2 :: [Bool] -> Bool
+myAnd2 = foldr (\a b -> if a == False then False else b) True
+-- fold, both myAnd and the folding -- function are point-free now 
+myAnd3 :: [Bool] -> Bool
+myAnd3 = foldr (&&) True
+
+-- 1.
+myOr :: [Bool] -> Bool
+myOr = foldr (||) False
+
+-- 2.
+myAny :: (a -> Bool) -> [a] -> Bool
+myAny f = foldr ((||) . f) False
+
+-- 3.
+myElem :: Eq a => a -> [a] -> Bool
+myElem e xs = foldr ((||) . (==e)) False xs
+
+-- 4.
+myReverse :: [a] -> [a]
+myReverse = foldl (flip (:)) []
+
+-- 5.
+myMap :: (a -> b) -> [a] -> [b]
+myMap f xs = undefined
+
+-- TODO 5,7,8,9
+
+-- 6.
+myFilter :: (a -> Bool) -> [a] -> [a]
+myFilter f xs = foldr (\ x y -> if (f x) then x:y else y) [] xs
+
+-- 7.
+squish :: [[a]] -> [a]
+squish = undefined
+
+-- 8.
+squishMap :: (a -> [b]) -> [a] -> [b]
+squishMap = undefined
+
+--9.
+squishAgain :: [[a]] -> [a]
+squishAgain = undefined
+
+-- 10.
+myMaximumBy :: (a -> a -> Ordering) -> [a] -> a 
+myMaximumBy f xs =  foldr (\ x y -> if (f x y == GT) then x else y) (last xs) xs
+
+-- 11.
+myMinimumBy :: (a -> a -> Ordering) -> [a] -> a
+myMinimumBy f xs = foldr (\ x y -> if (f x y == LT) then x else y) (last xs) xs
+
