@@ -1,11 +1,19 @@
-module Code10 where
+module chapter10.Code10 where
 
 validLength = length [1,2,3,4,undefined]
 invalidLength = length ([1,2,3,4] ++ undefined)
 
 -- TODO failing import
 
-import Data.Time
+-- stubbing 
+data UTCTime = UTCTime Int Int
+derive Eq UTCTime
+derive Ord UTCTime
+derive Show UTCTime
+
+fromGregorian a b c = a
+secondsToDiffTime a = a
+
 
 -- Database Processing
 

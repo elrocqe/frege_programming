@@ -1,0 +1,260 @@
+module chapter11.Code11 where
+
+--import Data.Int
+
+main :: [String] -> IO ()
+main args = println "Code11"
+
+-- 11.5 Data constructors and values
+
+data PugType = PugData
+data HuskyType a = HuskyData
+data DogueDeBordeaux doge = DogueDeBordeaux doge
+
+myPug = PugData :: PugType
+
+myHusky :: HuskyType a
+myHusky = HuskyData
+
+myOtherHusky :: Num a => HuskyType a
+myOtherHusky = HuskyData
+
+myOtherOtherHusky :: HuskyType [[[[Int]]]]
+myOtherOtherHusky = HuskyData
+
+myDoge :: DogueDeBordeaux Int
+myDoge = DogueDeBordeaux 10
+
+-- FREGE kind error
+--data Doggies a = Husky a | Mastiff a
+--derive Eq Doggies
+--derive Show Doggies
+
+
+-- Exercises: Dog Types
+-- 1. Is Doggies a type constructor or a data constructor?
+-- type constructor
+-- 2. What is the kind of Doggies?
+-- FREGE :k not possible in frepl
+-- 3. What is the kind of Doggies String?
+-- 4. What is the type of Husky 10?
+-- 5. What is the type of Husky (10 :: Integer)?
+-- 6. What is the type of Mastiff "Scooby Doo"?
+-- 7. Is DogueDeBordeaux a type constructor or a data constructor?
+-- 8. What is the type of DogueDeBordeaux?
+-- 9. What is the type of DogueDeBordeaux "doggie!"
+
+-- 11.6 What’s a type and what’s data?
+
+data Price = Price Integer
+derive Eq Price
+derive Show Price
+
+data Manufacturer = Mini | Mazda | Tata
+derive Eq Manufacturer
+derive Show Manufacturer
+
+data Airline =
+    PapuAir
+    | CatapultsR'Us
+    | TakeYourChancesUnited
+derive Eq Airline
+derive Show Airline
+
+data Vehicle = Car Manufacturer Price
+    | Plane Airline
+derive Eq Vehicle
+derive Show Vehicle
+
+-- Exercises: Vehicles
+
+myCar = Car Mini (Price 14000)
+urCar = Car Mazda (Price 20000)
+clownCar = Car Tata (Price 7000)
+doge = Plane PapuAir
+
+carList = [myCar, urCar, clownCar]
+
+-- 1.
+-- :t myCar
+-- myCar :: Vehicle
+
+-- 2.
+isCar :: Vehicle -> Bool
+isCar (Car _ _ ) = True
+isCar _ = False
+
+isPlane :: Vehicle -> Bool
+isPlane (Plane _) = True
+isPlane _ = False
+
+areCars :: [Vehicle] -> [Bool]
+areCars = map isCar
+
+-- 3.
+getManu :: Vehicle -> Manufacturer
+getManu (Car manufacturer price ) = manufacturer
+
+-- 4.
+-- Haskell: Non-exhaustive patterns in function getManu
+-- Frege: function pattern is refutable, consider adding a case for Vehicle.Plane_
+
+-- 5.
+data Size = Size Integer
+derive Eq Size
+derive Show Size
+
+data Vehicle' = Car' Manufacturer Price | Plane' Airline Size
+derive Eq Vehicle'
+derive Show Vehicle'
+
+isPlane' :: Vehicle' -> Bool
+isPlane' (Plane' _ _) = True
+isPlane' _ = False
+
+doge' = Plane' PapuAir (Size 22)
+
+-- 11.7 Data constructor arities
+
+-- nullary
+data Example0 = Example0
+derive Eq Example0
+derive Show Example0
+
+-- unary
+data Example1 = Example1 Int
+derive Eq Example1
+derive Show Example1
+
+-- product of Int and String
+data Example2 = Example2 Int String
+derive Eq Example2
+derive Show Example2
+
+
+data MyType = MyVal Int
+derive Eq MyType
+derive Show MyType
+
+-- 11.8 What makes these datatypes algebraic?
+
+-- Exercises: Cardinality
+-- TODO
+-- 1. 
+-- data PugType = PugData
+-- cardinality = 1
+
+-- 2.
+-- data Airline = PapuAir | CatapultsR'Us | TakeYourChancesUnited
+-- cardinality = 3
+
+-- 3. Given what we know about Int8, what’s the cardinality of Int16?
+-- cardinality = 2^16 (65536)
+
+-- 4. Use the REPL and maxBound and minBound to examine Int and Integer. What can you say about the cardinality of those types?
+
+-- 5. Extra credit (impress your friends!): What’s the connection between the 8 in Int8 and that type’s cardinality of 256?
+-- 2^x where x is the number of bits
+
+-- Simple datatypes with nullary data constructors
+data Example = MakeExample
+derive Show Example
+
+-- Exercises: For Example
+-- TODO
+
+-- Unary constructors
+-- data Goats = Goats Int deriving (Eq, Show)
+
+-- 11.9 newtype
+
+tooManyGoats :: Int -> Bool
+tooManyGoats n = n > 42
+
+newtype Goats' = Goats' Int
+derive Eq Goats'
+derive Show Goats'
+
+newtype Cows = Cows Int
+derive Eq Cows
+derive Show Cows
+
+tooManyGoats' :: Goats' -> Bool
+tooManyGoats' (Goats' n) = n > 42
+
+class TooMany a where
+    tooMany :: a -> Bool
+
+instance TooMany Int where
+    tooMany n = n > 42
+
+
+newtype Goats1 = Goats1 Int
+derive Show Goats1
+
+instance TooMany1 Goats1 where
+    tooMany1 (Goats1 n) = n > 43
+
+class TooMany1 a where
+    tooMany1 :: a -> Bool
+
+instance TooMany1 Int where
+    tooMany1 n = n > 42
+
+newtype Goats2 = Goats2 Int
+derive Eq Goats2
+derive Show Goats2
+
+instance TooMany1 Goats2 where
+    tooMany1 (Goats2 n) = tooMany1 n
+        
+
+-- TODO Pragma
+
+-- Exercises: Logic Goats
+-- TODO
+
+-- 11.10 Sum types
+-- Exercises: Pity the Bool
+
+-- 1.
+data BigSmall = Big Bool | Small Bool
+derive Eq BigSmall
+derive Show BigSmall
+
+-- 2.
+-- FREGE not possible?
+ -- bring Int8 in scope
+--data NumberOrBool = Numba Int8 | BoolyBool Bool
+--derive Eq NumberOrBool
+--derive Show NumberOrBool
+-- parentheses due to syntactic -- collision between (-) minus -- and the negate function
+--myNumba = Numba (-128)
+
+
+-- 11.11 Product types
+data QuantumBool = QuantumTrue | QuantumFalse | QuantumBoth
+derive Eq QuantumBool
+derive Show QuantumBool
+
+data TwoQs = MkTwoQs QuantumBool QuantumBool
+derive Eq TwoQs
+derive Show TwoQs
+
+type TwoQs1 = (QuantumBool, QuantumBool)
+
+data Person = MkPerson String Int
+derive Eq Person
+derive Show Person
+
+-- sample data
+jm = MkPerson "julie" 108 
+ca = MkPerson "chris" 16
+
+namae :: Person -> String
+namae (MkPerson s _) = s
+
+data Person1 =
+    Person1 { name :: String , age :: Int }
+derive Eq Person1
+derive Show Person1

@@ -93,38 +93,41 @@ toNumber :: a -> Integer
 
 -- pretend newtype is data for now
 newtype Age = Age Integer
-derive Age Eq 
-derive Age Show
+derive Eq Age 
+derive Show Age
 
 -- TODO compile errors
 instance Numberish Age where
-fromNumber n = Age n
-toNumber (Age n) = n
+    fromNumber n = Age n
+    toNumber (Age n) = n
 
-newtype Year =
-Year Integer
-derive Year Eq
-derive Year Show
+data Year = Year Integer
+derive Eq Year
+derive Show Year
 
 instance Numberish Year where
-fromNumber n = Year n toNumber (Year n) = n
+    fromNumber n = Year n
+    toNumber (Year n) = n
 
 sumNumberish :: Numberish a => a -> a -> a
 sumNumberish a a' = fromNumber summed
-    where integerOfA = toNumber a
+    where
+        integerOfA = toNumber a
         integerOfAPrime = toNumber a'
         summed = integerOfA + integerOfAPrime
         
-class Numberish a where
-fromNumber :: Integer -> a
-toNumber :: a -> Integer
-defaultNumber :: a
+class Numberish' a where
+    fromNumber' :: Integer -> a
+    toNumber' :: a -> Integer
+    defaultNumber' :: a
 
-instance Numberish Age where
-fromNumber n = Age n
-toNumber (Age n) = n
-defaultNumber = Age 65
-instance Numberish Year where fromNumber n = Year n
-toNumber (Year n) = n
-defaultNumber = Year 1988
+instance Numberish' Age where
+    fromNumber' n = Age n
+    toNumber' (Age n) = n
+    defaultNumber' = Age 65
+
+instance Numberish' Year where
+    fromNumber' n = Year n
+    toNumber' (Year n) = n
+    defaultNumber' = Year 1988
 
