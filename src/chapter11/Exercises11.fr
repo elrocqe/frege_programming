@@ -1,0 +1,167 @@
+module chapter11.Exercises11 where
+
+import Data.Char
+import frege.test.QuickCheck
+
+-- Ciphers
+
+-- As-patterns
+-- FREGE no as-pattern
+
+-- f :: Show a => (a, b) -> IO (a, b)
+-- f t@(a, _) = do
+--     print a
+--     return t
+
+f :: Show a => (a, b) -> IO (a, b)
+f (a, b) = do
+    print a
+    return (a,b)
+
+-- doubleUp :: [a] -> [a]
+--doubleUp [] = []
+--doubleUp xs@(x:_) = x : xs
+
+doubleUp :: [a] -> [a]
+doubleUp [] = []
+doubleUp (x:xs) = x : (x:xs)
+
+
+-- 1.
+isSubseqOf :: (Eq a)
+            => [a]
+            -> [a]
+            -> Bool 
+isSubseqOf [] _ = True
+isSubseqOf _ [] = False
+isSubseqOf (x:xs) (y:ys) = if (x == y) then isSubseqOf xs ys else isSubseqOf (x:xs) ys
+isSubseqOfTest1 = once $ isSubseqOf (unpacked "blah") (unpacked "blahwoot")
+isSubseqOfTest2 = once $ isSubseqOf (unpacked "blah") (unpacked "wootblah")
+isSubseqOfTest3 = once $ (isSubseqOf (unpacked "blah") (unpacked "wootbla") == False)
+isSubseqOfTest4 = once $ (isSubseqOf (unpacked "blah") (unpacked "halbwoot") == False)
+isSubseqOfTest5 = once $ isSubseqOf (unpacked "blah") (unpacked "blawhoot")
+-- isSubseqOf "blah" "wootblah"
+-- isSubseqOf "blah" "wboloath"
+-- isSubseqOf "blah" "wootbla"  == False
+-- isSubseqOf "blah" "halbwoot" == False
+-- isSubseqOf "blah" "blawhoot"
+-- isSubseqOf "blah" "blahwoot"
+
+-- 2.
+-- FREGE TODO String Handling
+--capitalizeWords :: [Char] -> [([Char], [Char])]
+--capitalizeWords [] = []
+--capitalizeWords s = go (words s)
+--	where
+--		go [] = []
+--		go ((x:xs):ws) =  ((x:xs), (toUpper x) : xs) : go ws
+
+--capitalizeWords "hello world" == [("hello", "Hello"), ("world", "World")]
+
+-- Language exercises
+-- 1.
+capitalizeWord :: [Char] -> [Char]
+capitalizeWord [] = []
+capitalizeWord (x:xs) = (toUpper x) : xs
+
+capitalizeWordTest1 = once $ (capitalizeWord (unpacked "Chortle")) == unpacked "Chortle"
+capitalizeWordTest2 = once $ (capitalizeWord (unpacked "chortle")) == unpacked"Chortle"
+
+-- 2.
+--capitalizeParagraph :: [Char] -> [Char]
+--capitalizeParagraph =  words . capitalizeWord
+
+
+-- s = "blah. woot ha."
+-- capitalizeParagraph s == "Blah. Woot ha."
+
+-- Phone exercise
+-- 1.
+data Button = Button Digit String
+data DaPhone = DaPhone [Button]
+
+phone :: DaPhone
+phone = DaPhone [Button '1' "",
+               Button '2' "abc",
+               Button '3' "abc",
+               Button '4' "abc",
+               Button '5' "abc",
+               Button '6' "abc",
+               Button '7' "abc",
+               Button '8' "abc",
+               Button '9' "abc",
+               Button '*' "",
+               Button '0' " ",
+               Button '#' ".,"
+               ]
+
+-- 2.
+convo :: [String]
+convo =
+    ["Wanna play 20 questions",
+     "Ya",
+     "U 1st haha",
+     "Lol ok. Have u ever tasted alcohol",
+     "Lol ya",
+     "Wow ur cool haha. Ur turn",
+     "Ok. Do u think I am pretty Lol",
+     "Lol ya",
+     "Just making sure rofl ur turn"]
+
+-- validButtons = "1234567890*#"
+type Digit = Char
+-- Valid presses: 1 and up
+type Presses = Int
+
+reverseTaps :: DaPhone
+            -> Char
+            -> [(Digit, Presses)]
+reverseTaps = undefined
+
+-- assuming the default phone definition
+-- 'a' -> [('2', 1)]
+-- 'A' -> [('*', 1), ('2', 1)]
+cellPhonesDead :: DaPhone
+               -> String
+               -> [(Digit, Presses)]
+cellPhonesDead = undefined
+
+ -- 3.
+fingerTaps :: [(Digit, Presses)] -> Presses
+fingerTaps = undefined
+
+-- 4.
+mostPopularLetter :: String -> Char
+mostPopularLetter = undefined
+
+-- 5.
+coolestLtr :: [String] -> Char
+coolestLtr = undefined
+
+coolestWord :: [String] -> String
+coolestWord = undefined
+
+
+-- Hutton’s Razor
+
+-- 1.
+data Expr
+    = Lit Integer
+    | Add Expr Expr
+    
+eval :: Expr -> Integer
+eval (Lit l) = l
+eval (Add e1 e2) = (eval e1) + (eval e2)
+
+-- eval (Add (Lit 1) (Lit 9001)) == 9002
+
+-- 2.
+printExpr :: Expr -> String
+printExpr (Lit l) = show l
+printExpr (Add e1 e2) = (printExpr e1) ++ " + " ++ (printExpr e2)
+
+-- printExpr (Add (Lit 1) (Lit 9001)) == "1 + 9001"
+-- a1 = Add (Lit 9001) (Lit 1)
+-- a2 = Add a1 (Lit 20001)
+-- a3 = Add (Lit 1) a2
+-- printExpr a3 == "1 + 9001 + 1 + 20001"
