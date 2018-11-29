@@ -65,7 +65,7 @@ capitalizeWord [] = []
 capitalizeWord (x:xs) = (toUpper x) : xs
 
 capitalizeWordTest1 = once $ (capitalizeWord (unpacked "Chortle")) == unpacked "Chortle"
-capitalizeWordTest2 = once $ (capitalizeWord (unpacked "chortle")) == unpacked"Chortle"
+capitalizeWordTest2 = once $ (capitalizeWord (unpacked "chortle")) == unpacked "Chortle"
 
 -- 2.
 --capitalizeParagraph :: [Char] -> [Char]

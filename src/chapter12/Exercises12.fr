@@ -1,0 +1,309 @@
+module chapter12.Exercises12 where
+
+import frege.test.QuickCheck
+
+-- Determine the kinds
+
+-- 1.
+-- id :: a -> a
+
+-- 2.
+-- r :: a -> f a
+
+
+-- String processing
+
+-- 1.
+
+notThe :: String -> Maybe String
+notThe = undefined
+
+--notTheTest1 = once $ notThe "the" == Nothing
+--notTheTest2 = once $ notThe "blahtheblah" == Just "blahtheblah"
+--notTheTest3 = once $ notThe "woot" == Just "woot"
+
+
+--splitWords :: [Char] -> [Char] -> [[]Char] -> a
+--splitWords (x:xs) w ws = if (x == ' ') then (splitWords xs [] ((w ++ [x]) : ws)) else (splitWords xs (w ++ [x]) ws)
+
+--splitWordsTest = once $ splitWords (unpacked "the cow loves us") [] [] == ["the", "cat", "loves", "us"]
+
+
+-- 2.
+replaceThe :: String -> String
+replaceThe = undefined
+
+--replaceTheTest = once $ replaceThe "the cow loves us" == "a cow loves us"
+
+countTheBeforeVowel :: String -> Integer
+countTheBeforeVowel = undefined
+
+--countTheBeforeVowelsTest1 = once $ countTheBeforeVowel "the cow" == 0
+--countTheBeforeVowelsTest2 = once $ countTheBeforeVowel "the evil cow" == 1
+
+
+-- 3.
+
+-- TODO Frege Int  vs Integer
+countVowels :: String -> Int
+countVowels s = length (filter isVowel (unpacked s))
+
+countVowelsTest1 = once $ countVowels "the cow" == 2
+countVowelsTest2 = once $ countVowels "Mikolajczak" == 4
+
+isVowel :: Char -> Bool
+isVowel c = c `elem` (unpacked vowels)
+
+-- Validate the word
+
+newtype Word' = Word' String
+derive Eq Word'
+derive Show Word'
+
+vowels = "aeiou"
+
+-- TODO
+--mkWord :: String -> Maybe Word'
+--mkWord s = if (vs > cs) then Nothing else (Just (Word' s))
+--    where (vs, cs) = foldr countLettersByType (0,0) (unpacked s)
+
+vs = 1
+cs = 1
+
+countLettersByType :: (Int, Int) -> [Char] -> (Int, Int)
+countLettersByType (vs, cs) (x:xs) =  if (isVowel x) then (vs + 1, cs) else (vs, cs + 1)
+
+
+-- It's only Natural
+
+
+-- As natural as any
+-- competitive bodybuilder
+data Nat = Zero | Succ Nat
+derive Eq Nat
+derive Show Nat
+
+natToInteger :: Nat -> Integer
+natToInteger Zero  = 0
+natToInteger (Succ n) = 1 + natToInteger n
+
+natToIntegerTest1 = once $ natToInteger Zero == 0
+natToIntegerTest2 = once $ natToInteger (Succ Zero) == 1
+natToIntegerTest3 = once $ natToInteger (Succ (Succ Zero)) == 2
+
+integerToNat :: Integer -> Maybe Nat
+integerToNat i = if i < 0 then Nothing else Just (integerToNat' i)
+
+integerToNatTest1 = once $ integerToNat 0 == Just Zero
+integerToNatTest2 = once $ integerToNat 1 == Just (Succ Zero)
+integerToNatTest3 = once $ integerToNat 2 == Just (Succ (Succ Zero))
+integerToNatTest4 = once $ integerToNat (-1) == Nothing
+
+
+integerToNat' :: Integer -> Nat
+integerToNat' 0 = Zero
+integerToNat' i = Succ (integerToNat' (i-1))
+
+integerToNat'Test1 = once $ integerToNat' 0 == Zero
+integerToNat'Test2 = once $ integerToNat' 1 == (Succ Zero)
+integerToNat'Test3 = once $ integerToNat' 2 == (Succ (Succ Zero))
+integerToNat'Test4 = once $ integerToNat (-1) == Nothing
+
+-- Small library for Maybe
+
+-- 1. 
+isJust :: Maybe a -> Bool
+isJust Nothing = False
+isJust (Just a) = True
+
+isJustTest1 = once $ isJust (Just 1) == True
+isJustTest2 = once $ isJust Nothing == False
+
+isNothing :: Maybe a -> Bool
+isNothing = not . isJust
+
+isNothingTest1 = once $ isNothing (Just 1) == False
+isNothingTest2 = once $ isNothing Nothing == True
+
+-- 2.
+mayybee :: b -> (a -> b) -> Maybe a -> b
+mayybee b f Nothing = b
+mayybee _ f (Just a) = f a
+
+mayybeeTest1 = once $ mayybee 0 (+1) Nothing == 0
+mayybeeTest2 = once $ mayybee 0 (+1) (Just 1) == 2
+
+-- 3.
+fromMaybe :: a -> Maybe a -> a
+fromMaybe a Nothing  = a
+fromMaybe a (Just j) = j
+
+fromMaybeTest1 = once $ fromMaybe 0 Nothing == 0
+fromMaybeTest2 = once $ fromMaybe 0 (Just 1) == 1
+
+-- Try writing it in terms
+-- of the maybe catamorphism
+     
+-- 4. 
+listToMaybe :: [a] -> Maybe a
+listToMaybe [] = Nothing
+listToMaybe (x:xs) = Just x
+
+--TODO Compiler error
+{-
+listToMaybeTest1 = once $ listToMaybe [1, 2, 3] == Just 1
+listToMaybeTest2 = once $ listToMaybe [] == Nothing
+-}
+
+maybeToList :: Maybe a -> [a]
+maybeToList Nothing = []
+maybeToList (Just a) = [a]
+
+{-
+maybeToListTest1 = once $ maybeToList (Just 1) == [1]
+maybeToListTest2 = once $ maybeToList Nothing == []
+-}
+
+-- 5.
+-- >>> catMaybes [Just 1, Nothing, Just 2]
+-- [1, 2]
+-- >>> let xs = take 3 $ repeat Nothing
+-- >>> catMaybes xs
+-- []
+catMaybes :: [Maybe a] -> [a]
+catMaybes (Nothing:xs) = catMaybes xs
+catMaybes ((Just a):xs) = a : catMaybes xs
+
+{-
+catMaybesTest1 = once $ catMaybes [Just 1, Nothing, Just 2] == [1, 2]
+catMaybesTest2 = once $ catMaybes (take 3 $ repeat Nothing) == []
+-}
+
+-- 6.
+flipMaybe :: [Maybe a] -> Maybe [a]
+flipMaybe (Nothing:xs) = Nothing
+-- TODO ???
+--flipMaybe ((Just a):xs) = if ((flipMaybe xs) == Nothing) then Nothing else Just (a:xs)
+
+{-
+flipMaybeTest1 = once $ flipMaybe [Just 1, Just 2, Just 3] == Just [1, 2, 3]
+flipMaybeTest2 = once $ flipMaybe [Just 1, Nothing, Just 3] == Nothing
+-}
+
+-- Small library for Either
+
+-- 1.
+lefts' :: [Either a b] -> [a]
+lefts' xs = foldr foldEitherLeft [] xs
+	where foldEitherLeft (Left a) as  = (a:as)
+	      foldEitherLeft (Right _) as = as
+
+-- 2.
+rights' :: [Either a b] -> [b]
+rights' xs = foldr foldEitherRight [] xs
+	where foldEitherRight (Left _) bs  = bs
+	      foldEitherRight (Right b) bs = (b:bs)
+
+-- 3.
+partitionEithers' :: [Either a b] -> ([a], [b])
+partitionEithers' xs = foldr foldEither ([], []) xs
+	where foldEither (Left a) (as, bs)  = ((a:as), bs)
+	      foldEither (Right b) (as, bs) = (as, (b:bs))
+
+-- 4.
+eitherMaybe' :: (b -> c) -> Either a b -> Maybe c
+eitherMaybe' f (Left _)  = Nothing
+eitherMaybe' f (Right b) = Just (f b)
+
+-- 5. This is a general catamorphism for Either values.
+either' :: (a -> c) -> (b -> c) -> Either a b -> c
+either' f g (Left a)  = f a
+either' f g (Right b) = g b
+
+-- 6. Same as before, but use the either' function you just wrote.
+eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
+eitherMaybe'' f e  = either' (\_ -> Nothing) (\b -> (Just (f b))) e
+
+{-
+iterateTest = once $ take 10 $ (iterate (+1) 0) == [0,1,2,3,4,5,6,7,8,9]
+unfoldsTest = once $ take 10 $ (unfoldr (\b -> Just (b, b+1)) 0) == [0,1,2,3,4,5,6,7,8,9]
+-}
+
+-- Why bother?
+
+import Data.List
+mehSum :: Num a => [a] -> a
+mehSum xs = go 0 xs
+    where go :: Num a => a -> [a] -> a
+          go n [] = n
+          go n (x:xs) = (go (n+x) xs)
+    
+niceSum :: Num a => [a] -> a
+niceSum = foldl' (+) 0
+
+mehProduct :: Num a => [a] -> a
+mehProduct xs = go 1 xs
+    where go :: Num a => a -> [a] -> a
+          go n [] = n
+          go n (x:xs) = (go (n*x) xs)
+          
+niceProduct :: Num a => [a] -> a
+niceProduct = foldl' (*) 1
+
+mehConcat :: [[a]] -> [a]
+mehConcat xs = go [] xs
+    where go :: [a] -> [[a]] -> [a]
+          go xs' [] = xs'
+          go xs' (x:xs) = (go (xs' ++ x) xs)
+
+niceConcat :: [[a]] -> [a]
+niceConcat = foldr (++) []
+
+
+-- Write your own iterate and unfoldr
+
+-- 1.
+myIterate :: (a -> a) -> a -> [a]
+myIterate f a = a : myIterate f (f a)
+
+-- iterate :: (a -> a) -> a -> [a]
+
+-- 2.
+myUnfoldr :: (b -> Maybe (a, b)) -> b -> [a]
+myUnfoldr f b = myUnfoldr' (f b) f b
+
+myUnfoldr' (Nothing) _ _ = []
+myUnfoldr' (Just (new_a, new_b)) f b = new_a : myUnfoldr f b
+
+--  unfoldr :: (b -> Maybe (a, b)) -> b -> [a]
+
+-- 3.
+ -- It helps to have the
+     -- types in front of you
+     -- myUnfoldr :: (b -> Maybe (a, b))
+-- -> b
+-- -> [a]
+betterIterate :: (a -> a) -> a -> [a]
+betterIterate f x = undefined --myUnfoldr ...?
+
+--betterIterateTest = once $ (take 10 $ betterIterate (+1) 0) == [0,1,2,3,4,5,6,7,8,9]
+
+-- Finally something other than a list!
+
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
+derive Eq (BinaryTree a)
+derive Ord (BinaryTree a)
+derive Show (BinaryTree a)
+
+-- 1. Write unfold for BinaryTree.
+unfold :: (a -> Maybe (a,b,a)) -> a -> BinaryTree b
+unfold = undefined
+--unfold f a = if ((f a) == Just) then Leaf else (Node (unfold f l) m (unfold f r)
+
+-- 2
+--treeBuild :: Integer -> BinaryTree Integer
+--treeBuild i = if (i < 0) then Leaf else (unfold nodeBuild 0)
+
+
+nodeBuild :: Int -> Int -> Maybe (Int,Int,Int)
+nodeBuild i c = if (i == c) then Nothing else Just (i + 1, i, i + 1)

@@ -3,7 +3,7 @@ module chapter11.Code11 where
 import frege.test.QuickCheck
 --import Data.Int
 
-main :: IO ()
+main :: IO () 
 main = println "Code11"
 
 -- 11.5 Data constructors and values
@@ -26,10 +26,9 @@ myOtherOtherHusky = HuskyData
 myDoge :: DogueDeBordeaux Int
 myDoge = DogueDeBordeaux 10
 
--- FREGE kind error
---data Doggies a = Husky a | Mastiff a
---derive Eq Doggies
---derive Show Doggies
+data Doggies a = Husky a | Mastiff a
+derive Eq (Doggies a)
+derive Show (Doggies a)
 
 
 -- Exercises: Dog Types
@@ -55,23 +54,24 @@ data Manufacturer = Mini | Mazda | Tata
 derive Eq Manufacturer
 derive Show Manufacturer
 
-data Airline =
-    PapuAir
+data Airline 
+    = PapuAir
     | CatapultsR'Us
     | TakeYourChancesUnited
 derive Eq Airline
 derive Show Airline
 
-data Vehicle = Car Manufacturer Price
+data Vehicle 
+    = Car   Manufacturer Price
     | Plane Airline
-derive Eq Vehicle
+derive Eq   Vehicle
 derive Show Vehicle
 
 -- Exercises: Vehicles
 
-myCar = Car Mini (Price 14000)
-urCar = Car Mazda (Price 20000)
-clownCar = Car Tata (Price 7000)
+myCar    = Car Mini  (Price 14000)
+urCar    = Car Mazda (Price 20000)
+clownCar = Car Tata  (Price 7000)
 doge = Plane PapuAir
 
 carList = [myCar, urCar, clownCar]
@@ -313,8 +313,8 @@ derive Show GuessWhat
 
 -- TODO Compiler errors
 data Id a = MkId a
---derive Eq Id
---derive Show Id
+derive Eq (Id a)
+derive Show (Id a)
 
 data Product a b = Product a b
 --derive Eq Product
@@ -323,17 +323,15 @@ data Product a b = Product a b
 data Sum a b =
     First a
     | Second b
---derive Eq Sum
---derive Show Sum
+derive Eq (Sum a b)
+derive Show (Sum a b)
 
 
 data RecordProduct a b =
     RecordProduct { pfirst :: a
                   , psecond :: b }
---derive Eq RecordProduct
---derive Show RecordProduct
-
-
+derive Eq (RecordProduct a b)
+derive Show (RecordProduct a b)
 
 newtype NumCow = NumCow Int
 derive Eq NumCow
@@ -379,6 +377,7 @@ data SheepInfo = SheepInfo AName Age PoundsOfWool
 derive Eq SheepInfo
 derive Show SheepInfo
 
+
 data Animal =
     Cow CowInfo
     | Pig PigInfo
@@ -396,8 +395,8 @@ trivialValue :: GuessWhat
 trivialValue = Chickenbutt
 
 data Id' a  = MkId' a
---derive Eq Id'
---derive Show Id'
+derive Eq (Id' a)
+derive Show (Id' a)
 
 -- note:
 -- MkId :: a -> Id a
@@ -414,8 +413,8 @@ person = Product "Simon" True
 data Sum' a b =
     First' a
     | Second' b
---derive Eq Sum'
---derive Show Sum'
+derive Eq (Sum' a b)
+derive Show (Sum' a b)
 
 -- data Twitter =
 --     Twitter deriving (Eq, Show)
@@ -596,244 +595,7 @@ derive Eq Automobile
 derive Show Automobile
 
 -- 11.14 Function type is exponential
-data Quantum =
-    Yes
-    | No
-    | Both
-derive Eq Quantum
-derive Show Quantum
-
--- arithmetic of sum types
-
--- 3 + 3
-quantSum1 :: Either Quantum Quantum
-quantSum1 = Right Yes
-quantSum2 :: Either Quantum Quantum
-quantSum2 = Right No
-quantSum3 :: Either Quantum Quantum
-quantSum3 = Right Both
-quantSum4 :: Either Quantum Quantum
-quantSum4 = Left Yes
-quantSum5 :: Either Quantum Quantum
-quantSum5 = Left No
-quantSum6 :: Either Quantum Quantum
-quantSum6 = Left Both
-
--- arithmetic of product types
-
--- 3 * 3
-quantProd1 :: (Quantum, Quantum)
-quantProd1 = (Yes, Yes)
-quantProd2 :: (Quantum, Quantum)
-quantProd2 = (Yes, No)
-quantProd3 :: (Quantum, Quantum)
-quantProd3 = (Yes, Both)
-quantProd4 :: (Quantum, Quantum)
-quantProd4 = (No, Yes)
-quantProd5 :: (Quantum, Quantum)
-quantProd5 = (No, No)
-quantProd6 :: (Quantum, Quantum)
-quantProd6 = (No, Both)
-quantProd7 :: (Quantum, Quantum)
-quantProd7 = (Both, Yes)
-quantProd8 :: (Quantum, Quantum)
-quantProd8 = (Both, No)
-quantProd9 :: (Quantum, Quantum)
-quantProd9 = (Both, Both)
-
--- arithmetic of function types
-
--- 3 ^ 3
-quantFlip1 :: Quantum -> Quantum
-quantFlip1 Yes = Yes
-quantFlip1 No = Yes
-quantFlip1 Both = Yes
-quantFlip2 :: Quantum -> Quantum
-quantFlip2 Yes = Yes
-quantFlip2 No = Yes
-quantFlip2 Both = No
-quantFlip3 :: Quantum -> Quantum
-quantFlip3 Yes = Yes
-quantFlip3 No = Yes
-quantFlip3 Both = Both
-quantFlip4 :: Quantum -> Quantum
-quantFlip4 Yes = Yes
-quantFlip4 No = No
-quantFlip4 Both = Yes
-quantFlip5 :: Quantum -> Quantum
-quantFlip5 Yes = Yes
-quantFlip5 No = Both
-quantFlip5 Both = Yes
-quantFlip6 :: Quantum -> Quantum
-quantFlip6 Yes = No
-quantFlip6 No = Yes
-quantFlip6 Both = Yes
-quantFlip7 :: Quantum -> Quantum
-quantFlip7 Yes = Both
-quantFlip7 No = Yes
-quantFlip7 Both = Yes
-quantFlip8 :: Quantum -> Quantum
-quantFlip8 Yes = Both
-quantFlip8 No = Yes
-quantFlip8 Both = No
-quantFlip9 :: Quantum -> Quantum
-quantFlip9 Yes = Both
-quantFlip9 No = No
-quantFlip9 Both = No
-quantFlip10 :: Quantum -> Quantum
-quantFlip10 Yes = Both
-quantFlip10 No = No
-quantFlip10 Both = Both
-quantFlip11 :: Quantum -> Quantum
-quantFlip11 Yes = Both
-quantFlip11 No = No
-quantFlip11 Both = Yes
-quantFlip12 :: Quantum -> Quantum
-quantFlip12 Yes = Both
-quantFlip12 No = Both
-quantFlip12 Both = No
-quantFlip13 :: Quantum -> Quantum
-quantFlip13 Yes = No
-quantFlip13 No = Both
-quantFlip13 Both = Both
-quantFlip14 :: Quantum -> Quantum
-quantFlip14 Yes = Both
-quantFlip14 No = Both
-quantFlip14 Both = Yes
-quantFlip15 :: Quantum -> Quantum
-quantFlip15 Yes = Yes
-quantFlip15 No = Both
-quantFlip15 Both = Both
-quantFlip16 :: Quantum -> Quantum
-quantFlip16 Yes = No
-quantFlip16 No = No
-quantFlip16 Both = No
-quantFlip17 :: Quantum -> Quantum
-quantFlip17 Yes = Both
-quantFlip17 No = Both
-quantFlip17 Both = Both
-quantFlip18 :: Quantum -> Quantum
-quantFlip18 Yes = Yes
-quantFlip18 No = No
-quantFlip18 Both = No
-quantFlip19 :: Quantum -> Quantum
-quantFlip19 Yes = Yes
-quantFlip19 No = No
-quantFlip19 Both = Both
-quantFlip20 :: Quantum -> Quantum
-quantFlip20 Yes = Yes
-quantFlip20 No = Both
-quantFlip20 Both = No
-quantFlip21 :: Quantum -> Quantum
-quantFlip21 Yes = No
-quantFlip21 No = Yes
-quantFlip21 Both = No
-quantFlip22 :: Quantum -> Quantum
-quantFlip22 Yes = No
-quantFlip22 No = Yes
-quantFlip22 Both = Both
-quantFlip23 :: Quantum -> Quantum
-quantFlip23 Yes = No
-quantFlip23 No = Both
-quantFlip23 Both = Yes
-quantFlip24 :: Quantum -> Quantum
-quantFlip24 Yes = No
-quantFlip24 No = No
-quantFlip24 Both = Yes
-quantFlip25 :: Quantum -> Quantum
-quantFlip25 Yes = No
-quantFlip25 No = No
-quantFlip25 Both = Both
-quantFlip26 :: Quantum -> Quantum
-quantFlip26 Yes = No
-quantFlip26 No = Both
-quantFlip26 Both = No
-quantFlip27 :: Quantum -> Quantum
-quantFlip27 Yes = Both
-quantFlip27 No = Yes
-quantFlip27 Both = Both
-
--- Exponentiation in what order?
-
-convert1 :: Quantum -> Bool
-convert1 Yes = True
-convert1 No = True
-convert1 Both = True
-convert2 :: Quantum -> Bool
-convert2 Yes = True
-convert2 No = True
-convert2 Both = False
-convert3 :: Quantum -> Bool
-convert3 Yes = True
-convert3 No = False
-convert3 Both = True
-convert4 :: Quantum -> Bool
-convert4 Yes = True
-convert4 No = False
-convert4 Both = False
-convert5 :: Quantum -> Bool
-convert5 Yes = False
-convert5 No = True
-convert5 Both = True
-convert6 :: Quantum -> Bool
-convert6 Yes = False
-convert6 No = True
-convert6 Both = False
-convert7 :: Quantum -> Bool
-convert7 Yes = False
-convert7 No = False
-convert7 Both = True
-convert8 :: Quantum -> Bool
-convert8 Yes = False
-convert8 No = False
-convert8 Both = False
-
--- According to the equality of a -> b and 𝑏^a there should be 2^3 or 8
--- implementations of this function. Does this hold? Write it out and
--- prove it for yourself.
-
--- Exercises: The Quad
--- Determine how many unique inhabitants each type has.
--- 1.
-data Quad =
-    One
-    | Two
-    | Three
-    | Four
-derive Eq Quad
-derive Show Quad
-   
- -- how many different forms can this take?
-eQuad :: Either Quad Quad
-eQuad = undefined
--- (sum type) 4 + 4 = 8
-
--- 2.
-prodQuad :: (Quad, Quad)
-prodQuad = undefined
--- (product type) 4 * 4 = 16
-
-
--- 3.
-funcQuad :: Quad -> Quad
-funcQuad = undefined
--- (function type) 4 ^ 4 = 256
-
--- 4.
-prodTBool :: (Bool, Bool, Bool)
-prodTBool = undefined
--- (product type) 2 * 2 * 2 = 8
-
--- 5.
-gTwo :: Bool -> Bool -> Bool
-gTwo = undefined
--- (function type) 2 ^ 2 ^ 2 = 16
-
--- 6. Hint: 5 digit number
-fTwo :: Bool -> Quad -> Quad
-fTwo = undefined
--- TODO
-
+-- see Code11_14.fr
 
 -- 11.15 Higher-kinded datatypes
 
@@ -863,9 +625,9 @@ data Silly a b c d = MkSilly a b c d
 data BinaryTree a =
       Leaf
     | Node (BinaryTree a) a (BinaryTree a)
---derive Eq BinaryTree
---derive Show BinaryTree
---derive Ord BinaryTree
+derive Eq (BinaryTree a)
+derive Show (BinaryTree a)
+--derive Ord (BinaryTree a)
 
 insert' :: Ord a
             => a
@@ -899,10 +661,10 @@ mapExpected =
          (Node Leaf 5 Leaf)
 
 -- acceptance test for mapTree
---mapOkay =
---    if mapTree (+1) testTree' == mapExpected
---    then print "yup okay!"
---    else error "test failed!"
+mapOkay =
+    if mapTree (+1) testTree' == mapExpected
+    then print "yup okay!"
+    else error "test failed!"
 
 
 -- Convert binary trees to lists
@@ -948,6 +710,7 @@ testPostorder =
 
 quickTestPostorder = once $ postorder testTree == [1, 3, 2]
 
+
 main1 :: IO ()
 main1 = do
     testPreorder
@@ -965,3 +728,4 @@ foldTree :: (a -> b -> b)
 foldTree f b Leaf = b
 foldTree f b (Node left a right) = f a (foldTree f (foldTree f b left) right)
 -- TODO check
+
