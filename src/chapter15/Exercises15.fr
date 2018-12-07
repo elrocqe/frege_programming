@@ -1,0 +1,336 @@
+module chapter15.Exercises15 where
+
+import Data.Monoid
+import frege.test.QuickCheck
+
+-- Semigroup exercises
+
+semigroupAssoc :: (Eq m, Semigroup m) => m -> m -> m -> Bool
+semigroupAssoc a b c = (a <> (b <> c)) == ((a <> b) <> c)
+
+-- 1.
+data Trivial = Trivial
+derive Eq Trivial
+derive Show Trivial
+
+instance Semigroup Trivial where
+  mappend Trivial Trivial = Trivial
+
+instance Arbitrary Trivial where
+  arbitrary = return Trivial
+
+type TrivAssoc = Trivial -> Trivial -> Trivial -> Bool
+
+trivAssocTest = property (semigroupAssoc :: TrivAssoc)
+
+-- 2.
+newtype Identity a = Identity a
+derive Eq (Identity a)
+derive Show (Identity a)
+
+instance Semigroup a => Semigroup (Identity a) where
+  mappend (Identity a) (Identity b) = (Identity (mappend a b))
+  -- TODO FREGE
+  --(Identity a) <> (Identity b) = Identity (a <> b)
+
+instance Arbitrary a => Arbitrary (Identity a) where
+  arbitrary =  do
+                 x <- arbitrary
+                 return (Identity x)
+  
+type IdentityAssoc = Identity String -> Identity String -> Identity String -> Bool
+
+identityAssocTest = property (semigroupAssoc :: IdentityAssoc)
+  
+-- 3.
+data Two a b = Two a b
+derive Eq (Two a b)
+derive Show (Two a b)
+
+instance (Semigroup a, Semigroup b) => Semigroup (Two a b) where
+  mappend (Two a b) (Two a' b') = Two (mappend a a') (mappend b b')
+--  (Two a b) <> (Two a' b') = Two (a <> a') (b <> b')
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Two a b) where
+  arbitrary =  do
+                 x <- arbitrary
+                 y <- arbitrary
+                 return (Two x y)
+  
+type TwoAssoc = Two String String -> Two String String -> Two String String -> Bool
+
+twoAssocTest = property (semigroupAssoc :: TwoAssoc)
+
+-- 4.
+data Three a b c = Three a b c
+derive Eq (Three a b c)
+derive Show (Three a b c)
+
+instance (Semigroup a, Semigroup b, Semigroup c) => Semigroup (Three a b c) where
+  mappend (Three a b c) (Three a' b' c') = Three (mappend a a') (mappend b b') (mappend c c')
+
+instance (Arbitrary a, Arbitrary b, Arbitrary c) => Arbitrary (Three a b c) where
+  arbitrary =  do
+                 x <- arbitrary
+                 y <- arbitrary
+                 z <- arbitrary
+                 return (Three x y z)
+  
+type ThreeAssoc = Three String String String -> Three String String String -> Three String String String -> Bool
+
+threeAssocTest = property (semigroupAssoc :: ThreeAssoc)
+
+-- 5.
+data Four a b c d = Four a b c d
+derive Eq (Four a b c d)
+derive Show (Four a b c d)
+
+instance (Semigroup a, Semigroup b, Semigroup c, Semigroup d) => Semigroup (Four a b c d) where
+  mappend (Four a b c d) (Four a' b' c' d') = Four (mappend a a') (mappend b b') (mappend c c')  (mappend d d')
+
+instance (Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d) => Arbitrary (Four a b c d) where
+  arbitrary =  do
+                 w <- arbitrary
+                 x <- arbitrary
+                 y <- arbitrary
+                 z <- arbitrary
+                 return (Four w x y z)
+  
+
+type FourAssoc =
+  Four String String String String -> Four String String String String -> Four String String String String -> Bool
+  
+fourAssocTest = property (semigroupAssoc :: FourAssoc)
+
+-- 6.
+newtype BoolConj = BoolConj Bool
+derive Eq BoolConj
+derive Show BoolConj
+
+instance Semigroup BoolConj where
+  mappend (BoolConj True) (BoolConj True) = BoolConj True
+  mappend (BoolConj True)  _              = BoolConj False
+  mappend (BoolConj False) _              = BoolConj False
+
+instance Arbitrary BoolConj where
+  arbitrary =  do
+                 frequency [(1, return (BoolConj True)),
+                            (1, return (BoolConj False))]
+
+type BoolConjAssoc = BoolConj -> BoolConj -> BoolConj -> Bool
+
+boolConjAssocTest = property (semigroupAssoc :: BoolConjAssoc)
+
+boolConjTest1 = once $ (BoolConj True) <> (BoolConj True) == BoolConj True
+boolConjTest2 = once $ (BoolConj False) == BoolConj False
+
+-- 7.
+newtype BoolDisj = BoolDisj Bool
+derive Eq BoolDisj
+derive Show BoolDisj
+
+instance Semigroup BoolDisj where
+  mappend (BoolDisj False) (BoolDisj False)  = BoolDisj False
+  mappend (BoolDisj False) (BoolDisj True)   = BoolDisj True
+  mappend (BoolDisj True)   _               = BoolDisj True
+
+instance Arbitrary BoolDisj where
+  arbitrary =  do
+                 frequency [(1, return (BoolDisj True)),
+                            (1, return (BoolDisj False))]
+  
+type BoolDisjAssoc = BoolDisj -> BoolDisj -> BoolDisj -> Bool
+
+boolDisjAssocTest = property (semigroupAssoc :: BoolDisjAssoc)
+  
+boolDisjTest1 = once $ (BoolDisj True) <> (BoolDisj True) == BoolDisj True
+boolDisjTest2 = once $ (BoolDisj True) <> (BoolDisj False) == BoolDisj True
+  
+-- 8.
+data Or a b = Fst a | Snd b
+derive Eq (Or a b)
+derive Show (Or a b)
+
+instance Semigroup (Or a b) where
+  mappend (Fst a) (Fst b) = Fst b
+  mappend (Fst a) (Snd b) = Snd b
+  mappend (Snd a) (Fst b) = Snd a
+  mappend (Snd a) (Snd b) = Snd a
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Or a b) where
+  arbitrary =  do
+                 x <- arbitrary
+                 y <- arbitrary
+                 frequency [(1, return (Fst x)),
+                            (1, return (Snd y))]
+  
+type OrAssoc = Or String String -> Or String String -> Or String String -> Bool
+
+orAssocTest = property (semigroupAssoc :: OrAssoc)
+
+
+-- TODO Ambiguous Type Eq
+orTest1 = once $ Fst 1 <> Snd 2 == Snd 2
+-- orTest2 = once $ Fst 1 <> Fst 2 == Fst 2
+orTest3 = once $ Snd 1 <> Fst 2 == Snd 1
+-- orTest4 = once $ Snd 1 <> Snd 2 == Snd 1
+
+-- 9.
+{- TODO
+newtype Combine a b = Combine { unCombine :: (a -> b) }
+
+f = Combine $ \n -> Sum (n + 1)
+g = Combine $ \n -> Sum (n - 1)
+
+combineTest1 = once $ unCombine (f <> g) $ 0 == Sum {getSum = 0}
+combineTest2 = once $ unCombine (f <> g) $ 1 == Sum {getSum = 2}
+combineTest3 = once $ unCombine (f <> f) $ 1 == Sum {getSum = 4}
+combineTest4 = once $ unCombine (g <> f) $ 1 == Sum {getSum = 2}
+-} 
+    
+-- 10.
+newtype Comp a = Comp { unComp :: (a -> a) }
+
+instance Semigroup a => Semigroup (Comp a) where
+   mappend (Comp f) (Comp g) = Comp (f . g)
+
+
+-- 11.
+data Validation a b = Failure a | Success b
+derive Eq (Validation a b)
+derive Show (Validation a b)
+
+instance (Semigroup a, Semigroup b) => Semigroup (Validation a b) where
+  mappend (Failure a) (Failure b) = Failure (a <> b)
+  mappend (Failure a) (Success b) = Failure a
+  mappend (Success a) (Failure b) = Failure b
+  mappend (Success a) (Success b) = Success (a <> b)
+--  (<>) = undefined
+
+type ValidationAssoc =
+  Validation String Int -> Validation String Int -> Validation String Int -> Bool
+
+
+
+-- TODO compile errors
+
+failure :: String -> Validation String Int
+failure = Failure
+success :: Int -> Validation String Int
+success = Success
+
+{-
+validationTest1 = once $ (success 1 <> failure "blah") == Success 1
+validationTest2 = once $ (failure "woot" <> failure "blah") == Failure "wootblah"
+validationTest3 = once $ (success 1 <> success 2) == Success 1
+validationTest4 = once $ (failure "woot" <> success 2) == Success 2
+-}
+
+{-
+main = do
+  failure :: String -> Validation String Int
+  failure = Failure
+  success :: Int -> Validation String Int
+  success = Success
+  print $ success 1 <> failure "blah"
+  print $ failure "woot" <> failure "blah"
+  print $ success 1 <> success 2
+  print $ failure "woot" <> success 2
+-}
+
+
+-- Monoid exercises
+
+monoidLeftIdentity :: (Eq m, Monoid m) => m -> Bool
+monoidLeftIdentity a = (mempty <> a) == a
+
+monoidRightIdentity :: (Eq m, Monoid m) => m -> Bool
+monoidRightIdentity a = (a <> mempty) == a
+
+sa = semigroupAssoc
+mli = monoidLeftIdentity
+mlr = monoidRightIdentity
+
+-- 1.
+instance Monoid Trivial where
+  mempty = Trivial
+  mappend = (<>)
+
+trivialMLITest   = property (mli :: Trivial -> Bool)
+trivialMRITest   = property (mlr :: Trivial -> Bool)
+
+-- 2.
+instance (Semigroup a, Monoid a) => Monoid (Identity a) where
+  mempty = Identity mempty
+  mappend = (<>)
+
+identityMLITest   = property (mli :: Identity String -> Bool)
+identityMRITest   = property (mlr :: Identity String -> Bool)
+
+-- 3.
+instance (Semigroup a, Semigroup b, Monoid a, Monoid b) => Monoid (Two a b) where
+  mempty = Two mempty mempty
+  mappend = (<>)
+  
+twoMLITest   = property (mli :: Two String String -> Bool)
+twoMRITest   = property (mlr :: Two String String -> Bool)
+  
+-- 4.
+instance Monoid BoolConj where
+  mempty = BoolConj True
+  mappend = (<>)
+  
+boolConjMLITest   = property (mli :: BoolConj -> Bool)
+boolConjMRITest   = property (mlr :: BoolConj -> Bool)
+
+-- 5.
+instance Monoid BoolDisj where
+  mempty = BoolDisj False
+  mappend = (<>)
+  
+boolDisjMLITest   = property (mli :: BoolDisj -> Bool)
+boolDisjMRITest   = property (mlr :: BoolDisj -> Bool)
+
+-- 6.
+newtype Combine a b = Combine { unCombine :: (a -> b) }
+--f = Combine $ \n -> Sum (n + 1)
+--unCombine (mappend f mempty) $ 1 == Sum {getSum = 2}
+instance (Semigroup a, Semigroup b, Monoid a, Monoid b) => Monoid (Combine a b) where
+-- TODO
+--  mempty = Combine mempty
+  mempty = undefined
+  mappend = (<>)
+  
+
+-- 7. Hint: We can do something that seems a little more specific and natural to functions now that the input and output types are the same.
+instance (Semigroup a, Monoid a) => Monoid (Comp a) where
+  mempty = Comp mempty
+  mappend = (<>)
+  
+
+-- 8.
+-- TODO
+newtype Mem s a = Mem {
+runMem :: s -> (a,s) }
+
+instance Monoid a => Monoid (Mem s a) where
+  mempty = undefined
+  mappend = undefined
+
+f = Mem $ \s -> ("hi", s + 1)
+
+{-
+main = do
+let rmzero = runMem mempty 0
+rmleft = runMem (f <> mempty) 0
+rmright = runMem (mempty <> f) 0
+print $ rmleft
+print $ rmright
+print $ (rmzero :: (String, Int)) print $ rmleft == runMem f 0 print $ rmright == runMem f 0
+A correct Monoid for Mem should, given the above code, get the following output:
+     Prelude> main
+     ("hi",1)
+     ("hi",1)
+     ("",0)
+True True
+-}

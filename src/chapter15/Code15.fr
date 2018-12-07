@@ -1,0 +1,187 @@
+module chapter15.Code15 where
+
+import frege.test.QuickCheck
+import Data.Monoid
+
+
+-- TODO check import
+-- import Control.Monad 
+
+main :: IO () 
+main = println "Code15"
+
+-- 15.5 Examples of using Monoid
+-- List
+
+mappendTest1 = once $ (mappend [1, 2, 3] [4, 5, 6]) == [1, 2, 3, 4, 5, 6]
+mappendTest2 = once $ (mappend [1 .. 3] [4 .. 6]) == [1, 2, 3, 4, 5, 6]
+mappendTest3 = once $ (mappend "Trout" " goes well with garlic") == "Trout goes well with garlic"
+
+appendTest1 = once $ ((++) [1, 2, 3] [4, 5, 6]) == [1, 2, 3, 4, 5, 6]
+appendTest2 = once $ ((++) [1 .. 3] [4 .. 6]) == [1, 2, 3, 4, 5, 6]
+appendTest3 = once $ ((++) "Trout" " goes well with garlic") == "Trout goes well with garlic"
+
+appendTest4  = once $ (foldr (++) [] [[1, 2, 3],[4, 5, 6]]) == [1, 2, 3, 4, 5, 6]
+mappendTest4 = once $ (foldr (mappend) mempty [[1, 2, 3],[4, 5, 6]]) == [1, 2, 3, 4, 5, 6]
+
+-- TODO FREGE Sum, Product, All and Any Newtypes
+--boolMonoidTest1  = once $ All True <> All True == All {getAll = True}
+
+-- 15.5 Examples of using Monoid
+
+-- List
+
+
+-- mappend [1, 2, 3] [4, 5, 6] == [1,2,3,4,5,6]
+--mconcat [[1..3], [4..6]] == [1,2,3,4,5,6]
+--mappend "Trout" " goes well with garlic" == "Trout goes well with garlic"
+--(++) [1, 2, 3] [4, 5, 6] == [1,2,3,4,5,6]
+-- (++) "Trout" " goes well with garlic" == "Trout goes well with garlic"
+--foldr (++) [] [[1..3], [4..6]] == [1,2,3,4,5,6]
+-- foldr mappend mempty [[1..3], [4..6]] == [1,2,3,4,5,6]
+
+-- 15.10 Reusing algebras by asking for algebras
+
+{-
+instance Monoid b => Monoid (a -> b)
+instance (Monoid a, Monoid b) => Monoid (a, b)
+instance (Monoid a, Monoid b, Monoid c) => Monoid (a, b, c)
+
+data Booly a = False' | True'
+derive Eq (Booly a)
+derive Show (Booly a)
+
+-- conjunction
+instance Monoid (Booly a) where
+  mappend False' _ = False'
+  mappend _ False' = False'
+  mappend True' True' = True'
+-}
+  
+-- Exercise: Optional Monoid
+data Optional a = Nada | Only a
+derive Eq (Optional a)
+derive Show (Optional a)
+
+instance Monoid a => Monoid (Optional a) where
+  mempty = Nada
+  mappend (Only x) _        = Only x
+  mappend _        (Only x) = Only x
+  mappend (Only x) (Only y) = Only (mappend x y)
+  mappend _        _        = Nada
+  
+-- TODO Sum, product newtypes missing
+--optionalMonoidTest1 = once $ (mappend (Only (Sum 1)) (Only (Sum 1)) == Only (Sum {getSum = 2}))
+--optionalMonoidTest2 = once $ (mappend (Only (Product 4)) (Only (Product 2)) == Only (Product {getProduct = 8}))
+--optionalMonoidTest3 = once $ (mappend (Only (Sum 1)) Nada == Only (Sum {getSum = 2}))
+--optionalMonoidTest4 = once $ (mappend (Only [1]) Nada == Only [1])
+--optionalMonoidTest4 = once $ (mappend Nada (Only (Sum 1)) == Only [1])
+
+--optionalMonoidInfixTest1 = once $ ((Only (Sum 1)) `mappend` (Only (Sum 1)) == Only (Sum {getSum = 2}))
+--optionalMonoidInfixTest2 = once $ ((Only (Product 4)) `mappend` (Only (Product 2)) == Only (Product {getProduct = 8}))
+--optionalMonoidInfixTest3 = once $ ((Only (Sum 1)) `mappend` Nada == Only (Sum {getSum = 2}))
+--optionalMonoidInfixTest4 = once $ ((Only [1]) `mappend` Nada == Only [1])
+--optionalMonoidInfixTest5 = once $ (Nada (Only `mappend` (Sum 1)) == Only [1]) 
+
+-- 15.11 Madness
+
+type Verb = String
+type Adjective = String
+type Adverb = String
+type Noun = String
+type Exclamation = String
+
+madlibbin' :: Exclamation -> Adverb -> Noun -> Adjective -> String
+madlibbin' e adv noun adj =
+  e <> "! he said " <>
+  adv <> " as he jumped into his car " <>
+  noun <> " and drove off with his " <>
+  adj <> " wife."
+
+madlibbinBetter' :: Exclamation -> Adverb -> Noun -> Adjective -> String
+madlibbinBetter' e adv noun adj =   mconcat [e, "! he said ", adv, " as he jumped into his car ", noun, " and drove off with his ", adj, " wife."]
+
+madlibbin'test       = once $ ((madlibbin' "Oj" "loudly" "JimBob" "latest")       ==  "Oj! he said loudly as he jumped into his car JimBob and drove off with his latest wife.")
+madlibbinBetter'test = once $ ((madlibbinBetter' "Oj" "loudly" "JimBob" "latest") ==  "Oj! he said loudly as he jumped into his car JimBob and drove off with his latest wife.")
+
+-- 15.12 Better living through QuickCheck
+
+monoidAssoc :: (Eq m, Monoid m) => m -> m -> m -> Bool
+monoidAssoc a b c = (a <> (b <> c)) == ((a <> b) <> c)
+
+monoidLeftIdentity :: (Eq m, Monoid m) => m -> Bool
+monoidLeftIdentity a = (mempty <> a) == a
+
+monoidRightIdentity :: (Eq m, Monoid m) => m -> Bool
+monoidRightIdentity a = (a <> mempty) == a
+
+monoidLeftIdentityTest  = property $ (monoidLeftIdentity  :: String -> Bool)
+monoidRightIdentityTest = property $ (monoidRightIdentity :: String -> Bool)
+
+-- associative, left identity, and right
+-- identity properties have been elided.
+-- Add them to your copy of this.
+
+data Bull = Fools | Twoo
+derive Eq Bull
+derive Show Bull
+
+instance Arbitrary Bull where
+  arbitrary = frequency [ (1, return Fools) , (1, return Twoo) ]
+
+instance Monoid Bull where
+  mempty = Fools
+  mappend _ _ = Fools
+  
+type BullMappend = Bull -> Bull -> Bull -> Bool
+
+ma = monoidAssoc
+mli = monoidLeftIdentity
+mlr = monoidRightIdentity
+
+maTest = property $ (ma :: BullMappend)
+-- mliTest = property $ (mli :: Bull -> Bool)
+-- mriTest = property $ (mlr :: Bull -> Bool)
+
+-- Exercise: Maybe Another Monoid
+
+newtype First' a = First' { getFirst' :: Optional a }
+derive Eq (First' a)
+derive Show (First' a)
+
+instance Monoid a => Monoid (First' a) where
+  mempty = First' Nada
+  --mappend = undefined
+  mappend (First' (Only x)) _                 = First' (Only x)
+  mappend _       (First' (Only x))           = First' (Only x)
+  mappend (First' (Only x)) (First' (Only y)) = First' (Only x)
+  mappend _        _                          = First' Nada
+  
+--firstMappend :: First' a-> First' a -> First' a
+--firstMappend = mappend
+
+type FirstMappend = First' String -> First' String -> First' String -> Bool
+  
+type FstId = First' String -> Bool
+
+instance Arbitrary a => Arbitrary (First' a) where
+  arbitrary =  do
+                 x <- arbitrary
+                 return (First' x)
+                 
+instance Arbitrary a => Arbitrary (Optional a) where
+  arbitrary =  do
+                 x <- arbitrary
+                 frequency [(1, return Nada),
+                            (1, return (Only x))]
+
+first'maTest  = property $ (ma :: FirstMappend)
+first'mliTest = property $ (mli :: FstId)
+first'mriTest = property $ (mlr :: FstId)
+
+-- TODO Int is not a Monoid
+first'Test1 = once $ First' (Only "1") `mappend` First' Nada == First' {getFirst' = Only "1"}
+-- TODO ambiguous type
+--first'Test2 = once $ First' Nada `mappend` First' Nada == First' {getFirst' = Nada}
+first'Test3 = once $ First' Nada `mappend` First' (Only "2") == First' {getFirst' = Only "2"}
+first'Test4 = once $ First' (Only "1") `mappend` First' (Only "2") == First' {getFirst' = Only "1"}
