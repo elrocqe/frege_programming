@@ -1,5 +1,9 @@
 module Exercises4 where
 
+main :: [String] -> IO ()
+main args = println "Exercises4"
+
+
 awesome = ["Papuchon", "curry", ":)"]
 also = ["Quake", "The Simons"]
 allAwesome = [awesome, also]

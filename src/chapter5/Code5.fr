@@ -1,4 +1,17 @@
-module Code5 where
+module chapter5.Code5 where
+
+import frege.test.QuickCheck
+
+
+main :: [String] -> IO ()
+main args = println "Code5"
+
+propertyOne = once $ (4 == 4)
+
+commutativity xs = property $ ((reverse xs) == reverse (reverse xs))
+
+hasHit = once $ (True == True)
+
 --Parametricity 
 -- id :: a -> a  -- parametrically polymorphic
 

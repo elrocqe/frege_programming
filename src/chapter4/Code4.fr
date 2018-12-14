@@ -1,5 +1,8 @@
 module Code4 where
 
+main :: [String] -> IO ()
+main args = println "Code4"
+
 greetIfCool :: String -> IO ()
 greetIfCool coolness =
     if cool coolness

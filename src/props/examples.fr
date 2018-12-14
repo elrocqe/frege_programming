@@ -1,0 +1,7 @@
+module Examples where
+
+foo :: a -> b -> c
+foo = undefined
+
+foo :: b -> a -> c
+foo = undefined

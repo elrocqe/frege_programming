@@ -1,0 +1,600 @@
+module chapter16.Code16 where
+
+import frege.test.QuickCheck
+
+-- 16.3 There’s a whole lot of fmap goin’ round
+
+test1 = map (\x -> x > 3) [1..6] == [False,False,False,True,True,True]
+test2 = fmap (\x -> x > 3) [1..6] == [False,False,False,True,True,True]
+
+test3 = fmap (+1) (Just 1) == Just 2
+
+
+ --with a tuple!
+tupleTest = once $ fmap (10/) (4, 5) == (4,2.0)
+--with Either!
+rca = Right "Chris Allen"
+-- TODO ambiguous type Eq
+-- eitherTest = once $ fmap (++ ", Esq.") rca == Right "Chris Allen, Esq."
+ 
+-- 16.4 Let’s talk about 𝑓, baby
+
+class Sumthin a
+  where s :: a -> a
+
+-- TODO compile error
+--class Else
+--  where e :: b -> f (g a b c)
+
+{-class Biffy where
+  slayer :: e a b 
+            -> (a -> c)
+            -> (b -> d)
+            -> e c d
+  -}     
+-- Exercises: Be Kind
+-- 1. What’s the kind of 𝑎?
+-- a -> a
+
+-- *
+
+-- 2. What are the kinds of 𝑏 and 𝑇 ? (The 𝑇 is capitalized on purpose!)
+-- a -> b a -> T (b a)
+
+-- b = * -> *
+-- T = * -> *
+
+-- 3. What’s the kind of 𝑐?
+-- c a b -> c b a
+
+--  c = * -> * -> *
+
+-- A shining star for you to see
+
+{- TODO kind errors
+
+-- functors1.hs
+data FixMePls1 =
+    FixMe
+  | Pls
+derive Eq FixMePls1
+derive Show FixMePls1
+
+instance Functor FixMePls1 where
+  fmap = error "it doesn't matter, it won't compile"
+-}
+
+-- functors2.hs
+data FixMePls2 a =
+    FixMe2
+  | Pls2 a
+derive Eq (FixMePls2 a)
+derive Show (FixMePls2 a)
+instance Functor FixMePls2 where fmap = error "it doesn't matter, it won't compile"
+
+-- functors3.hs
+data FixMePls3 a =
+  FixMe3
+  | Pls3 a
+derive Eq (FixMePls3 a)
+derive Show (FixMePls3 a)
+
+instance Functor FixMePls3 where
+  fmap _ FixMe3 = FixMe3
+  fmap f (Pls3 a) = Pls3 (f a)
+
+{-
+-- functors4.hs
+data FixMePls4 a =
+  FixMe4
+  | Pls4 a
+derive Eq (FixMePls4 a)
+derive Show (FixMePls4 a)
+
+instance Functor (FixMePls4 a) where
+  fmap _ FixMe4 = FixMe4
+  fmap f (Pls4 a) = Pls4 (f a)
+-}
+
+-- 16.5 Functor Laws
+
+-- Identity
+
+
+fmapIdTest = once $ fmap id (unpacked "Hi Julie") == unpacked "Hi Julie"
+idTest = once $ id "Hi Julie" == "Hi Julie"
+
+-- Composition
+
+compositionTest1 = once $ fmap ((+1) . (*2)) [1..5] == [3,5,7,9,11]
+compositionTest2 = once $ (fmap (+1) . fmap (*2) $ [1..5]) == [3,5,7,9,11]
+
+-- 16.6 The Good, the Bad, and the Ugly
+
+data WhoCares a =
+    ItDoesnt
+  | Matter a
+  | WhatThisIsCalled
+derive Eq (WhoCares a)
+derive Show (WhoCares a)
+-- derive Eq ItDoesnt
+
+--data ItDoesnt = ItDoesnt
+
+instance Functor WhoCares where
+  fmap _ ItDoesnt = ItDoesnt
+  fmap _ WhatThisIsCalled =
+    WhatThisIsCalled
+  fmap f (Matter a) = Matter (f a)
+  
+{-instance Functor WhoCares where
+  fmap _ ItDoesnt = WhatThisIsCalled
+  fmap f WhatThisIsCalled = ItDoesnt
+  fmap f (Matter a) = Matter (f a)
+-}
+  
+--whoCaresTest1 = once $ fmap id (ItDoesnt) == (ItDoesnt)
+--whoCaresTest2 = once $ fmap id WhatThisIsCalled == WhatThisIsCalled
+whoCaresTest3 = once $ fmap id (Matter 1) == id (Matter 1)
+
+-- Composition should just work
+
+data CountingGood a = Heisenberg Int a
+derive Eq (CountingGood a)
+derive Show (CountingGood a)
+
+instance Functor CountingGood where
+  fmap f (Heisenberg n a) =
+    Heisenberg (n) (f a)
+    
+-- 16.7 Commonly used functors
+
+replaceWithP = const 'p'
+replaceWithPTest1 = once $ replaceWithP 10000 == 'p'
+replaceWithPTest2 = once $ replaceWithP "woohoo" == 'p'
+replaceWithPTest3 = once $ replaceWithP (Just 10) == 'p'
+
+-- data Maybe a = Nothing | Just a
+maybeReplaceWithPTest1 = once $ fmap replaceWithP (Just 10) == Just 'p'
+maybeReplaceWithPTest2 = once $ fmap replaceWithP Nothing == Nothing
+
+-- data [] a = [] | a : [a]
+listReplaceWithPTest1 = once $ fmap replaceWithP [1, 2, 3, 4, 5] == unpacked "ppppp"
+listReplaceWithPTest2 = once $ fmap replaceWithP (unpacked "Ave") == unpacked "ppp"
+listReplaceWithPTest3 = once $ fmap (+1) [] == []
+listReplaceWithPTest4 = once $ fmap replaceWithP [] == unpacked ""
+
+-- data (,) a b = (,) a b
+tupleReplaceWithPTest1 = once $ fmap replaceWithP (10, 20) == (10,'p')
+tupleReplaceWithPTest2 = once $ fmap replaceWithP (10, "woo") == (10,'p')
+
+negateTest1 = once $ negate 10 == -10
+
+tossEmOne = fmap (+1) negate
+
+negateTossEmOneTest = once $ (tossEmOne 10) == -9
+tossEmOneTest = once $ tossEmOne (-10) == 11
+
+tossEmOne' = (+1) . negate
+
+tossEmOne'Test1 = once $ tossEmOne' 10 == -9
+tossEmOne'Test2 = once $ tossEmOne' (-10) == 11
+
+
+-- The functors are stacked and that’s a fact
+
+-- TODO 
+ 
+-- Exercises: Heavy Lifting
+-- 1.
+-- TODO instance of error
+--a = (+1) $ read "[1]" :: [Int]
+ 
+--test_a = a == [2]
+     
+-- 2.
+-- TODO Type error
+b = (fmap . fmap) (++ "lol") (Just ["Hi,","Hello"])
+test_b = once $ b == Just ["Hi,lol","Hellolol"]
+
+-- 3.
+c = fmap (*2) (\x -> x - 2)
+test_c = once $ c 1 == -2
+
+-- 4.
+--d = ((return '1' ++) . show) (\x -> [x, 1..3])
+--test_d = once $ d 0 == "1[0,1,2,3]"
+
+--5.
+-- TODO
+{-
+e :: IO Integer
+e =  let ioi = readIO "1" :: IO Integer
+         changed = read ("123"++) show ioi
+     in (*3) changed
+     
+test_e = e == 3693
+-}
+
+-- 16.8 Transforming the unapplied type argument
+
+data Two a b = Two a b
+derive Eq (Two a b)
+derive Show (Two a b)
+
+data Or a b =
+    First a
+  | Second b
+derive Eq (Or a b)
+derive Show (Or a b)
+
+instance Functor (Two a) where
+  fmap f (Two a b) = Two a (f b)
+  
+instance Functor (Or a) where
+  fmap _ (First a) = First a
+  fmap f (Second b) = Second (f b)
+
+
+-- 16.9 QuickChecking Functor instances
+
+-- We know the Functor laws are the following:
+-- fmap id = id
+-- fmap (p . q) = (fmap p) . (fmap q)
+
+
+functorIdentity :: (Functor f, Eq (f a)) => f a -> Bool
+functorIdentity f = fmap id f == f
+
+functorCompose :: (Eq (f c), Functor f)
+                   => (a -> b)
+                   -> (b -> c)
+                   -> f a
+                   -> Bool
+functorCompose f g x = (fmap g (fmap f x)) == (fmap (g . f) x)
+
+
+{-
+Prelude> :{
+*Main| let f :: [Int] -> Bool
+*Main|     f x = functorIdentity x
+*Main| :}
+Prelude> quickCheck f
++++ OK, passed 100 tests.
+Prelude> let c = functorCompose (+1) (*2)
+Prelude> let li x = c (x :: [Int])
+Prelude> quickCheck li
++++ OK, passed 100 tests.
+
+-- Making QuickCheck generate functions too
+
+{-# LANGUAGE ViewPatterns #-}
+import Test.QuickCheck
+import Test.QuickCheck.Function
+-}
+{-
+functorCompose' :: (Eq (f c), Functor f)
+                   => fa
+                   -> Fun a b
+                   -> Fun b c
+                   -> Bool
+functorCompose' x (Fun _ f) (Fun _ g) = (fmap (g . f) x) == (fmap g . fmap f $ x)
+-}
+{-
+Prelude> type IntToInt = Fun Int Int
+Prelude> :{
+*Main| type IntFC =
+*Main|          [Int]
+*Main|       -> IntToInt
+*Main|       -> IntToInt
+*Main|       -> Bool
+*Main| :}
+Prelude> let fc' = functorCompose'
+Prelude> quickCheck (fc' :: IntFC)
++++ OK, passed 100 tests.
+-}
+
+-- 16.10 Exercises: Instances of Func
+{-
+--TODO module error
+-- 1.
+data Identity a = Identity a
+derive Eq (Identity a)
+derive Show (Identity a)
+
+instance Functor Identity where
+  fmap f (Identity a) = Identity (f a)
+  
+instance Arbitrary a => Arbitrary (Identity a) where
+  arbitrary =  do
+                 x <- arbitrary
+                 return (Identity x)
+  
+type IdentityFunctorIdentity = Identity Int -> Bool
+identityFunctorIdentityTest = property (functorIdentity :: IdentityFunctorIdentity)
+
+-- TODO FunctorComposeTests
+--type IdentityFunctorCompose = Identity Int -> Bool
+--identityFunctorTest = property (functorCompose :: IdentityFunctorCompose)
+
+-- 2.
+data Pair a = Pair a a
+derive Eq (Pair a)
+derive Show (Pair a)
+
+instance Functor Pair where
+  fmap f (Pair a b) = Pair (f a) (f b)
+  
+instance Arbitrary a => Arbitrary (Pair a) where
+  arbitrary =  do
+                 x <- arbitrary
+                 return (Pair x x)
+  
+type PairFunctorIdentity = Pair Int -> Bool
+pairFunctorIdentityTest = property (functorIdentity :: PairFunctorIdentity)
+
+-- 3.
+data Two' a b = Two' a b
+derive Eq (Two' a b)
+derive Show (Two' a b)
+
+instance Functor (Two' a) where
+  fmap f (Two' a b) = Two' a (f b)
+  
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Two' a b) where
+  arbitrary =  do
+                 x <- arbitrary
+                 y <- arbitrary
+                 return (Two' x y)
+  
+type Two'FunctorIdentity = Two' Int Int -> Bool
+two'FunctorIdentityTest = property (functorIdentity :: Two'FunctorIdentity)
+  
+-- 4.
+data Three a b c = Three a b c
+derive Eq (Three a b c)
+derive Show (Three a b c)
+
+instance Functor (Three a b) where
+  fmap f (Three a b c) = Three a b (f c)
+  
+instance (Arbitrary a, Arbitrary b, Arbitrary c) => Arbitrary (Three a b c) where
+  arbitrary =  do
+                 x <- arbitrary
+                 y <- arbitrary
+                 z <- arbitrary
+                 return (Three x y z)
+  
+type ThreeFunctorIdentity = Three Int Int Int -> Bool
+threeFunctorIdentityTest = property (functorIdentity :: ThreeFunctorIdentity)
+  
+-- 5.
+data Three' a b = Three' a b b
+derive Eq (Three' a b)
+derive Show (Three' a b)
+
+instance Functor (Three' a) where
+  fmap f (Three' a b c) = Three' a (f b) (f c)
+  
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Three' a b) where
+  arbitrary =  do
+                 x <- arbitrary
+                 y <- arbitrary
+                 z <- arbitrary
+                 return (Three' x y z)
+  
+type Three'FunctorIdentity = Three' Int Int -> Bool
+three'FunctorIdentityTest = property (functorIdentity :: Three'FunctorIdentity)
+
+
+-- 6.
+data Four a b c d = Four a b c d
+derive Eq (Four a b c d)
+derive Show (Four a b c d)
+
+instance Functor (Four a b c) where
+  fmap f (Four a b c d) = Four a b c (f d)
+  
+instance (Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d) => Arbitrary (Four a b c d) where
+  arbitrary =  do
+                 w <- arbitrary
+                 x <- arbitrary
+                 y <- arbitrary
+                 z <- arbitrary
+                 return (Four w x y z)
+  
+type FourFunctorIdentity = Four Int Int Int Int -> Bool
+fourFunctorIdentityTest = property (functorIdentity :: FourFunctorIdentity)
+
+-- 7.
+data Four' a b = Four' a a a b
+derive Eq (Four' a b )
+derive Show (Four' a b)
+
+instance Functor (Four' a) where
+  fmap f (Four' a b c d) = Four' a b c (f d)
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Four' a b) where
+  arbitrary =  do
+                 w <- arbitrary
+                 x <- arbitrary
+                 y <- arbitrary
+                 z <- arbitrary
+                 return (Four' w x y z)
+  
+type Four'FunctorIdentity = Four' Int Int -> Bool
+four'FunctorIdentityTest = property (functorIdentity :: Four'FunctorIdentity)
+-}
+-- 8. Can you implement one for this type? Why? Why not?
+data Trivial = Trivial
+-- TODO not possible
+     
+
+-- 16.11 Ignoring possibilities
+
+-- Maybe
+
+incIfJust :: Num a => Maybe a -> Maybe a
+incIfJust (Just n) = Just $ n + 1
+incIfJust Nothing = Nothing
+
+showIfJust :: Show a => Maybe a -> Maybe String
+showIfJust (Just s) = Just $ show s
+showIfJust Nothing = Nothing
+
+someFunc Nothing = Nothing
+
+-- TODO 
+-- someFunc (Just x) = Just $ someOtherFunc x
+
+incMaybe :: Num a => Maybe a -> Maybe a
+incMaybe m = fmap (+1) m
+
+showMaybe :: Show a => Maybe a -> Maybe String
+showMaybe s = fmap show s
+
+incMaybeTest1 = once $ incMaybe (Just 1) == Just 2
+-- incMaybeTest2 = once $ incMaybe Nothing == Nothing
+showMaybeTest1 = once $ showMaybe (Just 9001) == Just "9001"
+-- TODO check error
+-- showMaybeTest2 = once $ showMaybe Nothing == Nothing
+
+incMaybe'' :: Num a => Maybe a -> Maybe a
+incMaybe'' = fmap (+1)
+
+showMaybe'' :: Show a => Maybe a -> Maybe String
+showMaybe'' = fmap show
+
+--:t fmap (+1)
+-- fmap (+1) :: (Functor f, Num b) => f b -> f b
+-- :t fmap show
+-- fmap show  :: (Functor f, Show a) => f a -> f String
+  
+liftedInc :: (Functor f, Num b) => f b -> f b
+liftedInc = fmap (+1)
+
+liftedShow :: (Functor f, Show a) => f a -> f String
+liftedShow = fmap show
+
+liftedIncTest1 = once $ liftedInc (Just 1) == Just 2
+--liftedIncTest2 = once $ liftedInc Nothing == Nothing
+liftedShowTest1 = once $ liftedShow (Just 1) == Just "1"
+--liftedShowTest2 = once $ liftedShow Nothing == Nothing
+
+liftedIncListTest = once $ liftedInc [1..5] == [2,3,4,5,6]
+liftedShowListTest = once $ liftedShow [1..5] == ["1","2","3","4","5"]
+
+-- Exercise: Possibly
+
+data Possibly a =
+  LolNope
+  | Yeppers a
+derive Eq (Possibly a)
+derive Show (Possibly a)
+instance Functor Possibly where
+  fmap :: (a -> b) -> Possibly a -> Possibly b
+  fmap f LolNope = LolNope
+  fmap f (Yeppers a) = Yeppers (f a)
+
+-- Either
+
+incIfRight :: Num a
+              => Either e a
+              -> Either e a
+incIfRight (Right n) = Right $ n + 1
+incIfRight (Left e) = Left e
+
+showIfRight :: Show a
+               => Either e a
+               -> Either e String
+showIfRight (Right s) = Right $ show s
+showIfRight (Left e) = Left e
+
+incEither :: Num a
+             => Either e a
+             -> Either e a
+incEither m = fmap (+1) m
+showEither :: Show a
+              => Either e a
+              -> Either e String
+showEither s = fmap show s
+
+incEither' :: Num a
+              => Either e a
+              -> Either e a
+incEither' = fmap (+1)
+
+showEither' :: Show a
+               => Either e a
+               -> Either e String
+showEither' = fmap show
+
+liftedInc' :: (Functor f, Num b) => f b -> f b
+liftedInc' = fmap (+1)
+
+liftedShow' :: (Functor f, Show a) => f a -> f String
+liftedShow' = fmap show
+
+-- Short Exercise
+
+data Sum a b =  
+    First' a
+  | Second' b
+derive Eq (Sum a b)
+derive Show (Sum a b)
+
+instance Functor (Sum a) where
+  fmap :: (a -> b) -> (Sum e) a -> (Sum e) b
+  fmap f (First' a) = First' a
+  fmap f (Second' a) = Second' (f a)
+
+-- TODO ab 669
+
+-- 16.14 IO Functor
+
+-- TODO check
+-- getLine :: IO String
+-- read :: Read a => String -> a
+getInt :: IO Int
+getInt = fmap read getLine
+
+
+meTooIsm :: IO String
+meTooIsm = do
+  input <- getLine
+  return (input ++ "and me too!")
+
+bumpIt :: IO Int
+bumpIt = do
+  intVal <- getInt
+  return (intVal + 1)
+
+
+-- 16.15 What if we want to do something different?
+
+type Nat f g = forall a . f a -> g a
+
+-- This'll work
+maybeToList :: Nat Maybe []
+maybeToList Nothing = []
+maybeToList (Just a) = [a]
+
+-- This will not work, not allowed.
+{-
+degenerateMtl :: Nat Maybe []
+degenerateMtl Nothing = []
+degenerateMtl (Just a) = [a+1]
+-}
+
+type Nat' f g a = f a -> g a
+
+-- This'll work
+maybeToList' :: Nat' Maybe [] a
+maybeToList' Nothing = []
+maybeToList' (Just a) = [a]
+
+-- But this will too if we tell it
+-- 'a' is Num a => a
+degenerateMtl' :: Num a => Nat' Maybe [] a
+degenerateMtl' Nothing = []
+degenerateMtl' (Just a) = [a+1]
