@@ -295,7 +295,7 @@ Prelude> quickCheck (fc' :: IntFC)
 -}
 
 -- 16.10 Exercises: Instances of Func
-{-
+
 --TODO module error
 -- 1.
 data Identity a = Identity a
@@ -311,7 +311,7 @@ instance Arbitrary a => Arbitrary (Identity a) where
                  return (Identity x)
   
 type IdentityFunctorIdentity = Identity Int -> Bool
-identityFunctorIdentityTest = property (functorIdentity :: IdentityFunctorIdentity)
+--identityFunctorIdentityTest = property (functorIdentity :: IdentityFunctorIdentity)
 
 -- TODO FunctorComposeTests
 --type IdentityFunctorCompose = Identity Int -> Bool
@@ -331,7 +331,7 @@ instance Arbitrary a => Arbitrary (Pair a) where
                  return (Pair x x)
   
 type PairFunctorIdentity = Pair Int -> Bool
-pairFunctorIdentityTest = property (functorIdentity :: PairFunctorIdentity)
+--pairFunctorIdentityTest = property (functorIdentity :: PairFunctorIdentity)
 
 -- 3.
 data Two' a b = Two' a b
@@ -348,7 +348,7 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Two' a b) where
                  return (Two' x y)
   
 type Two'FunctorIdentity = Two' Int Int -> Bool
-two'FunctorIdentityTest = property (functorIdentity :: Two'FunctorIdentity)
+--two'FunctorIdentityTest = property (functorIdentity :: Two'FunctorIdentity)
   
 -- 4.
 data Three a b c = Three a b c
@@ -366,7 +366,7 @@ instance (Arbitrary a, Arbitrary b, Arbitrary c) => Arbitrary (Three a b c) wher
                  return (Three x y z)
   
 type ThreeFunctorIdentity = Three Int Int Int -> Bool
-threeFunctorIdentityTest = property (functorIdentity :: ThreeFunctorIdentity)
+--threeFunctorIdentityTest = property (functorIdentity :: ThreeFunctorIdentity)
   
 -- 5.
 data Three' a b = Three' a b b
@@ -384,7 +384,7 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Three' a b) where
                  return (Three' x y z)
   
 type Three'FunctorIdentity = Three' Int Int -> Bool
-three'FunctorIdentityTest = property (functorIdentity :: Three'FunctorIdentity)
+--three'FunctorIdentityTest = property (functorIdentity :: Three'FunctorIdentity)
 
 
 -- 6.
@@ -392,9 +392,10 @@ data Four a b c d = Four a b c d
 derive Eq (Four a b c d)
 derive Show (Four a b c d)
 
+{-  TODO module error
 instance Functor (Four a b c) where
   fmap f (Four a b c d) = Four a b c (f d)
-  
+
 instance (Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d) => Arbitrary (Four a b c d) where
   arbitrary =  do
                  w <- arbitrary
@@ -404,8 +405,8 @@ instance (Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d) => Arbitrary (Four
                  return (Four w x y z)
   
 type FourFunctorIdentity = Four Int Int Int Int -> Bool
-fourFunctorIdentityTest = property (functorIdentity :: FourFunctorIdentity)
-
+--fourFunctorIdentityTest = property (functorIdentity :: FourFunctorIdentity)
+-}
 -- 7.
 data Four' a b = Four' a a a b
 derive Eq (Four' a b )
@@ -423,8 +424,8 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Four' a b) where
                  return (Four' w x y z)
   
 type Four'FunctorIdentity = Four' Int Int -> Bool
-four'FunctorIdentityTest = property (functorIdentity :: Four'FunctorIdentity)
--}
+--four'FunctorIdentityTest = property (functorIdentity :: Four'FunctorIdentity)
+
 -- 8. Can you implement one for this type? Why? Why not?
 data Trivial = Trivial
 -- TODO not possible
