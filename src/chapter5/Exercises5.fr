@@ -1,4 +1,4 @@
-module Exercises5 where
+module chapter5.Exercises5 where
 
 -- simple example
 example = 1

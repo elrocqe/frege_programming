@@ -1,4 +1,4 @@
-module Exercises4 where
+module chapter4.Exercises4 where
 
 main :: [String] -> IO ()
 main args = println "Exercises4"

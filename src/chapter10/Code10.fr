@@ -3,9 +3,7 @@ module chapter10.Code10 where
 validLength = length [1,2,3,4,undefined]
 invalidLength = length ([1,2,3,4] ++ undefined)
 
--- TODO failing import
-
--- stubbing 
+-- failing import -> stubbing 
 data UTCTime = UTCTime Int Int
 derive Eq UTCTime
 derive Ord UTCTime

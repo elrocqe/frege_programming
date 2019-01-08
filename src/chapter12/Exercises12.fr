@@ -156,7 +156,7 @@ listToMaybeTest2 = once $ listToMaybe [] == Nothing
 -}
 
 maybeToList :: Maybe a -> [a]
-maybeToList Nothing = []
+maybeToList Nothing  = []
 maybeToList (Just a) = [a]
 
 {-
@@ -244,7 +244,7 @@ niceSum = foldl' (+) 0
 mehProduct :: Num a => [a] -> a
 mehProduct xs = go 1 xs
     where go :: Num a => a -> [a] -> a
-          go n [] = n
+          go n []     = n
           go n (x:xs) = (go (n*x) xs)
           
 niceProduct :: Num a => [a] -> a
@@ -253,7 +253,7 @@ niceProduct = foldl' (*) 1
 mehConcat :: [[a]] -> [a]
 mehConcat xs = go [] xs
     where go :: [a] -> [[a]] -> [a]
-          go xs' [] = xs'
+          go xs' []     = xs'
           go xs' (x:xs) = (go (xs' ++ x) xs)
 
 niceConcat :: [[a]] -> [a]

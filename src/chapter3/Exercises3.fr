@@ -1,4 +1,4 @@
-module Exercises3 where 
+module chapter3.Exercises3 where 
 
 pi = 22/7
 

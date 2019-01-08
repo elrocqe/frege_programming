@@ -1,4 +1,4 @@
-module Exercises7 where
+module chapter7.Exercises7 where
 
 -- Let’s write code
 -- 1.

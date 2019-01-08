@@ -1,5 +1,8 @@
-module Code7 where
+module chapter7.Code7 where
 
+main :: IO ()
+main = println $ bindExp 1  
+    
 -- Setting parameters
 
 myNum :: Num a => a
@@ -13,15 +16,19 @@ stillAFunction a b c = a ++ b ++ c
 
 -- Binding variables to values
 
-
 addOne :: Integer -> Integer
 addOne x = x + 1
-
---bindExp :: Integer -> String
+    
+--
+bindExp :: Integer -> String
+bindExp x =
+    let y = 10 in
+    "x: " ++ show x ++ " y: " ++ show y
+    
 --bindExp :: Show b => a -> String
--- bindExp x = let x = 10 in "x: " ++ show x ++ " y: " ++ show y
-        
-        
+-- TODO check
+--}
+
 -- Exercise: Grab Bag
 -- 3.
 -- a) Rewrite the f function in the where clause.
@@ -191,6 +198,7 @@ returnBroke _ _ _ d = d
 returnAfterApply :: (a -> b) -> a -> c -> b
 returnAfterApply f a c = f a
 
+
 data Employee = Coder | Manager | Veep | CEO
 derive Eq Employee
 derive Ord Employee
@@ -207,14 +215,21 @@ codersRuleCEOsDrool Coder _ = GT
 codersRuleCEOsDrool _ Coder = LT
 codersRuleCEOsDrool e e' = compare e e'
 
-employeeRank :: ( Employee -> Employee -> Ordering ) -> Employee -> Employee -> IO ()
-employeeRank f e e' = case f e e' of
+employeeRank :: Employee -> Employee -> IO ()
+employeeRank e e' = 
+    case (compare e e') of
     GT -> reportBoss e e'
-    EQ -> putStrLn "Neither employee\
-    \ is the boss"
+    EQ -> putStrLn "Neither employee is the boss"
     LT -> (flip reportBoss) e e'
-    
-    
+
+
+employeeRank' :: ( Employee -> Employee -> Ordering ) -> Employee -> Employee -> IO ()
+employeeRank' f e e' = case f e e' of
+    GT -> reportBoss e e'
+    EQ -> putStrLn "Neither employee is the boss"
+    LT -> (flip reportBoss) e e'
+
+
 -- Exercises: Artful Dodgy
 dodgy x y = x + y * 10
 oneIsOne = dodgy 1
@@ -294,3 +309,4 @@ numbers x
     | x < 0  = -1
     | x == 0 = 0
     | x > 0  = 1
+

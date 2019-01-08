@@ -1,4 +1,4 @@
-module Code8 where
+module chapter8.Code8 where
 
 fourFactorial :: Integer
 fourFactorial = 4 * 3 * 2 * 1
@@ -58,21 +58,20 @@ fibonacci x = fibonacci (x - 1) + fibonacci (x - 2)
 
 -- 8.5 Integral division from scratch
 
---dividedBy :: Integer -> Integer -> Integer
---dividedBy = div
+dividedBy :: Integer -> Integer -> Integer
+dividedBy = div
 
 -- changes to
--- TODO type compile error
 type Numerator = Integer
 type Denominator = Integer
 type Quotient = Integer
 dividedBySyn :: Numerator -> Denominator -> Quotient
 dividedBySyn = div
  
---dividedByRec :: Integral a => a -> a -> (a, a)
+dividedByRec :: Integral a => a -> a -> (a, a)
 dividedByRec num denom = go num denom 0
     where
-		-- go :: Integral a => a -> a -> a -> (a,a)
+		go :: Integral a => a -> a -> a -> (a,a)
 		go n d count
 			| n < d     = (count, n)
 			| otherwise = go (n - d) d (count + 1)

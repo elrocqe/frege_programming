@@ -1,4 +1,4 @@
-module Code3 where 
+module chapter3.Code3 where 
 
 -- print1.hs
 main1 :: IO ()

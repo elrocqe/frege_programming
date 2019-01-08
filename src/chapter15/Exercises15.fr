@@ -31,7 +31,7 @@ derive Show (Identity a)
 instance Semigroup a => Semigroup (Identity a) where
   mappend (Identity a) (Identity b) = (Identity (mappend a b))
   -- TODO FREGE
-  --(Identity a) <> (Identity b) = Identity (a <> b)
+  -- (Identity a) <> (Identity b) = Identity (a <> b)
 
 instance Arbitrary a => Arbitrary (Identity a) where
   arbitrary =  do

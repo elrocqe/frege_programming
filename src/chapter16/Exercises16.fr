@@ -35,6 +35,7 @@ instance Arbitrary a => Arbitrary (BoolAndSomethingElse a) where
   
 type BoolAndSomethingElseFunctorIdentity = BoolAndSomethingElse Int -> Bool
 -- TODO check compile errors
+
 --boolAndSomethingElseFunctorIdentityTest = property (functorIdentity :: BoolAndSomethingElseFunctorIdentity)
 
 -- 3.
@@ -59,7 +60,7 @@ type BoolAndMaybeSomethingElseFunctorIdentity = BoolAndMaybeSomethingElse Int ->
  
 -- 4. Use the kinds to guide you on this one, don’t get too hung up on the details.
 -- TODO check error
--- newtype Mu f = InF { outF :: f (Mu f) }
+-- data Mu f = InF { outF :: f (Mu f) }
 
 -- 5.
 -- Again, follow the kinds and ignore the unfamiliar parts
@@ -143,18 +144,18 @@ type KFunctorIdentity = K Int Int -> Bool
 --kFunctorIdentityTest = property (functorIdentity :: KFunctorIdentity)
 
 -- 3. {-# LANGUAGE FlexibleInstances #-}
-{-
+
 data Flip f a b = Flip (f b a)
 -- TODO correct derives?
---derive Eq (Flip a b)
+--derive Eq (Flip f a b)
 --derive Show (Flip f a b)
 
-newtype K' a b = K' a
+data K' a b = K' a
 -- should remind you of an
 -- instance you've written before
 instance Functor (Flip K' a) where
   fmap = undefined
--}
+
 
 -- 4.
 data EvilGoateeConst a b = GoatyConst b

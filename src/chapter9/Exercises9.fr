@@ -8,7 +8,7 @@ main = print (myAny odd [1,3,5])
 -- 1. 
 -- :t isUpper
 -- :t toUpper
--- TODO type in Frege is ω
+-- FREGE: type in Frege is ω
 
 -- 2.
 myFilter :: [Char] -> [Char]

@@ -165,7 +165,9 @@ derive Show Example
 -- TODO
 
 -- Unary constructors
--- data Goats = Goats Int deriving (Eq, Show)
+data Goats = Goats Int
+derive Eq Goats
+derive Show Goats
 
 -- 11.9 newtype
 

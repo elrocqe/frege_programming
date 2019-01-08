@@ -1,4 +1,4 @@
-module Code4 where
+module chapter4.Code4 where
 
 main :: [String] -> IO ()
 main args = println "Code4"

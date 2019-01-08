@@ -77,15 +77,15 @@ myFilter f xs = foldr (\ x y -> if (f x) then x:y else y) [] xs
 
 -- 7.
 squish :: [[a]] -> [a]
-squish = undefined
+squish xs = foldr (flip (foldr (:))) [] xs
 
 -- 8.
 squishMap :: (a -> [b]) -> [a] -> [b]
-squishMap = undefined
+squishMap f xs = foldr (\x y -> foldr (:) y (f x)) [] xs
 
 --9.
 squishAgain :: [[a]] -> [a]
-squishAgain = undefined
+squishAgain = squishMap id
 
 -- 10.
 myMaximumBy :: (a -> a -> Ordering) -> [a] -> a 

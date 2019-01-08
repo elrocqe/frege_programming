@@ -182,6 +182,6 @@ first'mriTest = property $ (mlr :: FstId)
 -- TODO Int is not a Monoid
 first'Test1 = once $ First' (Only "1") `mappend` First' Nada == First' {getFirst' = Only "1"}
 -- TODO ambiguous type
---first'Test2 = once $ First' Nada `mappend` First' Nada == First' {getFirst' = Nada}
+first'Test2 = once $ First' Nada `mappend` First' Nada == First' {getFirst' = Nada}
 first'Test3 = once $ First' Nada `mappend` First' (Only "2") == First' {getFirst' = Only "2"}
 first'Test4 = once $ First' (Only "1") `mappend` First' (Only "2") == First' {getFirst' = Only "1"}
