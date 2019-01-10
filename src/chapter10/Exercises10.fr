@@ -67,9 +67,7 @@ myReverse = foldl (flip (:)) []
 
 -- 5.
 myMap :: (a -> b) -> [a] -> [b]
-myMap f xs = undefined
-
--- TODO 5,7,8,9
+myMap f xs = foldr ((:) . f) [] xs
 
 -- 6.
 myFilter :: (a -> Bool) -> [a] -> [a]

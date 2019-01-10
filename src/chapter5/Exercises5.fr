@@ -1,38 +1,54 @@
 module chapter5.Exercises5 where
 
+import frege.test.QuickCheck
+
+propertyOne = once $ (4 == 4)
+
+commutativity xs = property $ ((reverse xs) == reverse (reverse xs))
+
+hasHit = once $ (True == True)
+
 -- simple example
 example = 1
 
 -- 1
 -- a)
 a1 = (* 9) 6
--- 54
 -- (* 9) 6 :: Num a => a
+
+a1Test = once $ (a1 == 54)
 
 -- b)
 b1 = head [(0,"doge"),(1,"kitteh")]
--- (0,"doge")
 -- head [(0,"doge"),(1,"kitteh")] :: Num a => (a, [Char])
+
+b1Test = once $ (b1 == (0,"doge"))
+
 
 -- c)
 c1 = head [(0 :: Integer ,"doge"),(1,"kitteh")] 
---(0, "doge")
 -- head [(0 :: Integer ,"doge"),(1,"kitteh")] :: (Integer, [Char])
+
+c1Test = once $ (c1 == (0,"doge"))
 
 -- d)
 d1 = if False then True else False
--- False
 -- if False then True else False :: Bool
+
+d1Test = once $ (d1 == False)
 
 -- e)
 e1 = length [1, 2, 3, 4, 5]
--- 5
 -- length [1, 2, 3, 4, 5] :: Int
+
+e1Test = once $ (e1 == 5)
 
 -- f)
 f1 = (length [1, 2, 3, 4]) > (length "TACOCAT")
--- False
 -- (length [1, 2, 3, 4]) > (length "TACOCAT") :: Bool
+
+f1Test = once $ (f1 == False)
+
 
 -- 2
 x2 = 5
@@ -40,17 +56,26 @@ y2 = x2 + 5
 w2 :: Int -- if you want not to unify on Int but want to use Num a => a, then you must use fromInt on the int values
 w2 = y2 * 10
 
+w2Test = once $ (w2 == 100)
+
+
 -- 3
 x3 = 5
 y3 = x3 + 5
 z3 y3 = y3 * 10
 z3 :: Num a => a -> a
 
+z3Test = once $ (z3 3 == 30)
+
+
 -- 4
 x4 = fromInt 5
 y4 = fromInt ( x4 + 5)
 f4 :: Real a => a
 f4 = 4 / y4
+
+f4Test = once $ (f4 == 0.4)
+
 
 -- 5
 x5 = "Julie"
@@ -59,6 +84,7 @@ z5 = "Haskell"
 f5 :: String
 f5 = x5 ++ y5 ++ z5
 
+f5Test = once $ (f5 == "Julie <3 Haskell")
 
 
 -- Does it compile?
@@ -169,6 +195,8 @@ sndString x = x ++ unpacked " over the rainbow"
 sing = if (x < y) then fstString x else sndString y
     where x = unpacked "Singin"
           y = unpacked "Somewhere"
+          
+singTest = once $ sing == unpacked "Singin in the rain"
 
 main :: IO ()
 main = do

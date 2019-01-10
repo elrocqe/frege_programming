@@ -91,7 +91,6 @@ f4a = 1.0
 -- b)
 -- f4b :: RealFrac a => a
 f4b = 1.0
--- TODO RealFrac in Frege?
 -- 5.
 -- a)
 freud::a->a

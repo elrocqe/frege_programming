@@ -10,9 +10,8 @@ tensDigit x = d
 -- a.
 tensDigit' :: Integral a => a -> a
 tensDigit' x = d
-    where (xLast, r)  = x `divMod` 10
-          (q, d)      = xLast `divMod` 10
--- TODO Check compile error when using _
+    where (xLast, _)  = x `divMod` 10
+          d           = snd (xLast `divMod` 10)
 
 -- b.
 -- yes, outer type remains the same

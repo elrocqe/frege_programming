@@ -32,7 +32,10 @@ capitalizeAll (x:xs) = toUpper x : capitalizeAll xs
 -- TODO failed experiment
 
 -- 6.
+myHead :: ListView a => a Char -> Char
 myHead xs = toUpper (head xs)
+
+myHeadPF :: ListView a => a Char->Char
 myHeadPF = toUpper . head
 
 

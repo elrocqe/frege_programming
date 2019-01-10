@@ -311,11 +311,6 @@ instance Arbitrary a => Arbitrary (Identity a) where
                  return (Identity x)
   
 type IdentityFunctorIdentity = Identity Int -> Bool
---identityFunctorIdentityTest = property (functorIdentity :: IdentityFunctorIdentity)
-
--- TODO FunctorComposeTests
---type IdentityFunctorCompose = Identity Int -> Bool
---identityFunctorTest = property (functorCompose :: IdentityFunctorCompose)
 
 -- 2.
 data Pair a = Pair a a
@@ -331,7 +326,6 @@ instance Arbitrary a => Arbitrary (Pair a) where
                  return (Pair x x)
   
 type PairFunctorIdentity = Pair Int -> Bool
---pairFunctorIdentityTest = property (functorIdentity :: PairFunctorIdentity)
 
 -- 3.
 data Two' a b = Two' a b
@@ -348,7 +342,6 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Two' a b) where
                  return (Two' x y)
   
 type Two'FunctorIdentity = Two' Int Int -> Bool
---two'FunctorIdentityTest = property (functorIdentity :: Two'FunctorIdentity)
   
 -- 4.
 data Three a b c = Three a b c
@@ -366,7 +359,6 @@ instance (Arbitrary a, Arbitrary b, Arbitrary c) => Arbitrary (Three a b c) wher
                  return (Three x y z)
   
 type ThreeFunctorIdentity = Three Int Int Int -> Bool
---threeFunctorIdentityTest = property (functorIdentity :: ThreeFunctorIdentity)
   
 -- 5.
 data Three' a b = Three' a b b
@@ -384,8 +376,6 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Three' a b) where
                  return (Three' x y z)
   
 type Three'FunctorIdentity = Three' Int Int -> Bool
---three'FunctorIdentityTest = property (functorIdentity :: Three'FunctorIdentity)
-
 
 -- 6.
 data Four a b c d = Four a b c d
@@ -405,7 +395,6 @@ instance (Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d) => Arbitrary (Four
                  return (Four w x y z)
   
 type FourFunctorIdentity = Four Int Int Int Int -> Bool
---fourFunctorIdentityTest = property (functorIdentity :: FourFunctorIdentity)
 -}
 -- 7.
 data Four' a b = Four' a a a b
@@ -424,13 +413,12 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Four' a b) where
                  return (Four' w x y z)
   
 type Four'FunctorIdentity = Four' Int Int -> Bool
---four'FunctorIdentityTest = property (functorIdentity :: Four'FunctorIdentity)
 
 -- 8. Can you implement one for this type? Why? Why not?
 data Trivial = Trivial
--- TODO not possible
+--  not possible, since Trivial is not higher-kinded
      
-
+     
 -- 16.11 Ignoring possibilities
 
 -- Maybe
@@ -443,11 +431,6 @@ showIfJust :: Show a => Maybe a -> Maybe String
 showIfJust (Just s) = Just $ show s
 showIfJust Nothing = Nothing
 
-someFunc Nothing = Nothing
-
--- TODO 
--- someFunc (Just x) = Just $ someOtherFunc x
-
 incMaybe :: Num a => Maybe a -> Maybe a
 incMaybe m = fmap (+1) m
 
@@ -455,10 +438,10 @@ showMaybe :: Show a => Maybe a -> Maybe String
 showMaybe s = fmap show s
 
 incMaybeTest1 = once $ incMaybe (Just 1) == Just 2
--- incMaybeTest2 = once $ incMaybe Nothing == Nothing
+--incMaybeTest2 = once $ incMaybe Nothing == Nothing
 showMaybeTest1 = once $ showMaybe (Just 9001) == Just "9001"
--- TODO check error
--- showMaybeTest2 = once $ showMaybe Nothing == Nothing
+--showMaybeTest2 = once $ showMaybe Nothing == Nothing
+-- TODO ambiguous type
 
 incMaybe'' :: Num a => Maybe a -> Maybe a
 incMaybe'' = fmap (+1)
@@ -481,6 +464,7 @@ liftedIncTest1 = once $ liftedInc (Just 1) == Just 2
 --liftedIncTest2 = once $ liftedInc Nothing == Nothing
 liftedShowTest1 = once $ liftedShow (Just 1) == Just "1"
 --liftedShowTest2 = once $ liftedShow Nothing == Nothing
+-- TODO ambiguous type
 
 liftedIncListTest = once $ liftedInc [1..5] == [2,3,4,5,6]
 liftedShowListTest = once $ liftedShow [1..5] == ["1","2","3","4","5"]

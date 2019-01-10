@@ -3,7 +3,7 @@ module chapter12.Code12 where
 import frege.test.QuickCheck
 
 main :: IO () 
-main = println "Code11"
+main = println "Code12"
 
 
 ifEvenAdd2 :: Integer -> Maybe Integer
@@ -21,7 +21,8 @@ data PersonInvalid = NameEmpty | AgeTooLow
 derive Eq PersonInvalid
 derive Show PersonInvalid
 
-{-mkPerson :: Name
+{-
+mkPerson :: Name
          -> Age
          -> Either PersonInvalid Person
 mkPerson name age

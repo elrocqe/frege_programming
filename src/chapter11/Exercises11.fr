@@ -28,10 +28,7 @@ doubleUp (x:xs) = x : (x:xs)
 
 
 -- 1.
-isSubseqOf :: (Eq a)
-            => [a]
-            -> [a]
-            -> Bool 
+isSubseqOf :: (Eq a) => [a] -> [a] -> Bool 
 isSubseqOf [] _ = True
 isSubseqOf _ [] = False
 isSubseqOf (x:xs) (y:ys) = if (x == y) then isSubseqOf xs ys else isSubseqOf (x:xs) ys
@@ -40,12 +37,6 @@ isSubseqOfTest2 = once $ isSubseqOf (unpacked "blah") (unpacked "wootblah")
 isSubseqOfTest3 = once $ (isSubseqOf (unpacked "blah") (unpacked "wootbla") == False)
 isSubseqOfTest4 = once $ (isSubseqOf (unpacked "blah") (unpacked "halbwoot") == False)
 isSubseqOfTest5 = once $ isSubseqOf (unpacked "blah") (unpacked "blawhoot")
--- isSubseqOf "blah" "wootblah"
--- isSubseqOf "blah" "wboloath"
--- isSubseqOf "blah" "wootbla"  == False
--- isSubseqOf "blah" "halbwoot" == False
--- isSubseqOf "blah" "blawhoot"
--- isSubseqOf "blah" "blahwoot"
 
 -- 2.
 -- FREGE TODO String Handling
@@ -153,7 +144,7 @@ eval :: Expr -> Integer
 eval (Lit l) = l
 eval (Add e1 e2) = (eval e1) + (eval e2)
 
--- eval (Add (Lit 1) (Lit 9001)) == 9002
+evalTest = once $ eval (Add (Lit 1) (Lit 9001)) == 9002
 
 -- 2.
 printExpr :: Expr -> String

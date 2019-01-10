@@ -24,10 +24,6 @@ bindExp :: Integer -> String
 bindExp x =
     let y = 10 in
     "x: " ++ show x ++ " y: " ++ show y
-    
---bindExp :: Show b => a -> String
--- TODO check
---}
 
 -- Exercise: Grab Bag
 -- 3.

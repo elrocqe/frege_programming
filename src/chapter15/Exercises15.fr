@@ -30,8 +30,7 @@ derive Show (Identity a)
 
 instance Semigroup a => Semigroup (Identity a) where
   mappend (Identity a) (Identity b) = (Identity (mappend a b))
-  -- TODO FREGE
-  -- (Identity a) <> (Identity b) = Identity (a <> b)
+  --  FREGE diamond notation not possible
 
 instance Arbitrary a => Arbitrary (Identity a) where
   arbitrary =  do
@@ -49,7 +48,6 @@ derive Show (Two a b)
 
 instance (Semigroup a, Semigroup b) => Semigroup (Two a b) where
   mappend (Two a b) (Two a' b') = Two (mappend a a') (mappend b b')
---  (Two a b) <> (Two a' b') = Two (a <> a') (b <> b')
 
 instance (Arbitrary a, Arbitrary b) => Arbitrary (Two a b) where
   arbitrary =  do

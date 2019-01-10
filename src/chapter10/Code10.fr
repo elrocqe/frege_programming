@@ -12,7 +12,6 @@ derive Show UTCTime
 fromGregorian a b c = a
 secondsToDiffTime a = a
 
-
 -- Database Processing
 
 data DatabaseItem = DbString String
@@ -50,6 +49,7 @@ sumDb = sum . filterDbNumber
 
 lengthDb :: [DatabaseItem] -> Integer
 lengthDb = fromIntegral . length . filterDbNumber
+
 -- 5.
 avgDb :: [DatabaseItem] -> Double
 avgDb xs = fromIntegral (sumDb xs) / fromIntegral (lengthDb xs)

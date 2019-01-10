@@ -16,22 +16,23 @@ import frege.test.QuickCheck
 -- 1.
 
 notThe :: String -> Maybe String
-notThe = undefined
+notThe xs = if xs == "the" then Nothing else (Just xs)
 
---notTheTest1 = once $ notThe "the" == Nothing
---notTheTest2 = once $ notThe "blahtheblah" == Just "blahtheblah"
---notTheTest3 = once $ notThe "woot" == Just "woot"
+notTheTest1 = once $ notThe "the" == Nothing
+notTheTest2 = once $ notThe "blahtheblah" == Just "blahtheblah"
+notTheTest3 = once $ notThe "woot" == Just "woot"
 
 
 --splitWords :: [Char] -> [Char] -> [[]Char] -> a
 --splitWords (x:xs) w ws = if (x == ' ') then (splitWords xs [] ((w ++ [x]) : ws)) else (splitWords xs (w ++ [x]) ws)
-
+-- TODO
 --splitWordsTest = once $ splitWords (unpacked "the cow loves us") [] [] == ["the", "cat", "loves", "us"]
 
 
 -- 2.
 replaceThe :: String -> String
 replaceThe = undefined
+-- TODO
 
 --replaceTheTest = once $ replaceThe "the cow loves us" == "a cow loves us"
 
@@ -44,7 +45,6 @@ countTheBeforeVowel = undefined
 
 -- 3.
 
--- TODO Frege Int  vs Integer
 countVowels :: String -> Int
 countVowels s = length (filter isVowel (unpacked s))
 
@@ -75,7 +75,6 @@ countLettersByType (vs, cs) (x:xs) =  if (isVowel x) then (vs + 1, cs) else (vs,
 
 
 -- It's only Natural
-
 
 -- As natural as any
 -- competitive bodybuilder
