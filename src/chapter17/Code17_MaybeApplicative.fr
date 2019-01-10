@@ -1,0 +1,196 @@
+module chapter17.Code17_MaybeApplicative where
+
+import frege.test.QuickCheck
+
+-- 17.5 Applicative in use
+
+-- Maybe Applicative
+
+-- Specializing the types
+
+{-
+-- f ~ Maybe
+type M = Maybe
+
+(<*>) :: f (a -> b) -> f a -> f b
+(<*>) :: M (a -> b) -> M a -> M b
+
+pure :: a -> f a
+pure :: a -> M a
+-}
+
+-- Using the Maybe Applicative
+
+validateLength :: Int -> String -> Maybe String
+validateLength maxLen s =
+  if (length s) > maxLen
+  then Nothing
+  else Just s
+
+data Name = Name String
+derive Eq Name
+derive Show Name
+
+data Address = Address String
+derive Eq Address
+derive Show Address
+
+mkName :: String -> Maybe Name
+mkName s = fmap Name $ validateLength 25 s
+
+mkAddress :: String -> Maybe Address
+mkAddress a = fmap Address $ validateLength 100 a
+
+-- smart constructor for Person
+
+data Person = Person Name Address
+derive Eq Person
+derive Show Person
+
+mkPerson :: String -> String -> Maybe Person
+mkPerson n a =
+  case mkName n of
+    Nothing -> Nothing
+    Just n' ->
+      case mkAddress a of
+        Nothing -> Nothing
+        Just a' -> Just $ Person n' a'
+
+s = "old macdonald's"
+addy = mkAddress s
+b = mkName "Babe"
+person = fmap Person b
+testPerson2 = person <*> addy
+-- Just (Person (Name "Babe") (Address "old macdonald's"))
+
+testPerson3 = Person <$> mkName "Babe" <*> addy
+-- Just (Person (Name "Babe") (Address "old macdonald's"))
+
+mkPerson' :: String -> String -> Maybe Person
+mkPerson' n a = Person <$> mkName n <*> mkAddress a
+
+instance Functor Maybe where
+  fmap _ Nothing = Nothing
+  fmap f (Just a) = Just (f a)
+  
+instance Applicative Maybe where
+  pure = Just
+  Nothing <*> _       = Nothing
+  _       <*> Nothing = Nothing
+  Just f  <*> Just a  = Just (f a)
+
+-- Just f <*> Just a = Just ( f a )
+-- Just (Person (Name "babe")) <*> Just (Address "farm") = Just (Person (Name "babe") (Address "farm"))
+
+-- TODO check partial applied constructor
+
+-- Before we moooove on
+
+data Cow = Cow { name :: String,
+                  age :: Int,
+               weight :: Int}
+derive Eq Cow
+derive Show Cow
+
+noEmpty :: String -> Maybe String
+noEmpty "" = Nothing
+noEmpty str = Just str
+
+noNegative :: Int -> Maybe Int
+noNegative n
+  | n >= 0 = Just n
+  | otherwise = Nothing
+
+-- Validating to get rid of empty -- strings, negative numbers
+cowFromString :: String -> Int -> Int -> Maybe Cow
+cowFromString name' age' weight' =
+  case noEmpty name' of
+    Nothing -> Nothing
+    Just nammy ->
+      case noNegative age' of
+        Nothing -> Nothing
+        Just agey ->
+          case noNegative weight' of
+            Nothing -> Nothing
+            Just weighty -> Just (Cow nammy agey weighty)
+            
+cowFromString' :: String -> Int -> Int -> Maybe Cow
+cowFromString' name' age' weight' = Cow <$> noEmpty name' <*> noNegative age' <*> noNegative weight'
+
+cowFromString'' :: String -> Int -> Int -> Maybe Cow
+cowFromString'' name' age' weight' = liftA3 Cow (noEmpty name') (noNegative age') (noNegative weight')
+
+cow1 = Cow <$> noEmpty "Bess"
+-- cow1 :: Maybe (Int -> Int -> Cow)
+
+cow2 = cow1 <*> noNegative 1
+-- cow2 :: Maybe (Int -> Cow)
+
+cow3 = cow2 <*> noNegative 2
+-- cow3 :: Maybe Cow
+
+cow1' = liftA3 Cow
+-- cow1 :: Applicative f => f String -> f Int -> f Int -> f Cow
+cow2' = cow1' (noEmpty "blah")
+--cow2 :: Maybe Int -> Maybe Int -> Maybe Cow
+
+cow3' = cow2' (noNegative 1)
+-- cow3 :: Maybe Int -> Maybe Cow
+
+cow4 = cow3' (noNegative 2)
+-- cow4 :: Maybe Cow
+
+
+-- we fmap'd my function over some
+-- functorial ``f'' or it already
+-- was in ``f'' somehow
+-- f ~ Maybe
+cow1'' :: Maybe (Int -> Int -> Cow)
+cow1'' = fmap Cow (noEmpty "Bess")
+-- and we hit a situation where want to map -- f (a -> b)
+-- not just (a -> b)
+-- (<*>) :: Applicative f => f (a -> b) -> f a -> f b
+-- over some f a
+-- to get an f b
+cow2'' :: Maybe (Int -> Cow)
+cow2'' = cow1 <*> noNegative 1
+
+
+-- specializations
+
+{-
+(<*>) :: Applicative f => f (a -> b) -> f a -> f b
+f ~ Maybe
+type M = Maybe
+maybeApply :: M (a -> b) -> M a -> M b
+maybeFmap :: (a->b) -> M a -> M b
+-- maybeFmap is just fmap's type
+-- specialized to Maybe
+-}
+
+-- concrete versions of the specializations:
+
+maybeApply' :: Maybe (a -> b) -> Maybe a -> Maybe b
+maybeApply' = (<*>)
+
+maybeMap :: (a -> b) -> Maybe a -> Maybe b
+maybeMap = fmap
+
+{-
+maybeMapBad :: (a -> b) -> Maybe a -> f b
+maybeMapBad = fmap
+-> gives compiler error
+-}
+
+-- Exercise: Fixer Upper
+
+-- 1.
+helloWorld1 = const <$> Just "Hello" <*> pure "World"
+helloWorld2 = apply ((fmap const) (Just "Hello")) (pure "World")
+helloWorldTest1 = once $ helloWorld1 == Just "Hello"
+helloWorldTest2 = once $ helloWorld2 == Just "Hello"
+
+-- 2. 
+tierness = (,,,) <$> Just 90 <*> Just 10 <*> Just "Tierness" <*> pure [1, 2, 3]
+-- Just (90,10,"Tierness",[1,2,3])
+-- TODO How to test this?

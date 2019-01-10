@@ -1,0 +1,152 @@
+module chapter17.Exercises17 where
+
+import frege.test.QuickCheck
+import Data.Monoid
+
+
+-- Methods
+-- pure ::a->?a
+-- (<*>) :: ? (a -> b) -> ? a -> ? b
+
+-- 1.
+
+-- Type []
+pureList ::a-> [a]
+pureList x = [x]
+
+applyList :: [(a -> b)] -> [a] -> [b]
+applyList [] _ = []
+applyList _ [] = []
+applyList (f:[]) xs = (fmap f xs)
+applyList (f:fs) xs = (fmap f xs) ++ (applyList fs xs)
+
+-- 2.
+
+-- Type IO
+pureIO ::a-> IO a
+pureIO x = return x
+
+applyIO :: IO (a -> b) -> IO a -> IO b
+applyIO = undefined
+--applyIO fs xs = [return (f x) | f <- fs, x <- xs ]
+-- TODO
+
+-- 3.
+
+-- Type (,) a
+pureTuple ::a-> (a,a)
+pureTuple x = (x, x)
+
+applyTuple ::  ((a -> b), (a -> b)) -> (a,a) -> (b,b)
+applyTuple (f, g) (x,y) = (f x, g y)
+
+-- 4.
+-- Type (->) e
+
+-- TODO
+
+-- 1.
+data Pair a = Pair a a
+derive Eq (Pair a)
+derive Show (Pair a)
+
+instance Functor Pair where
+  fmap f (Pair a b) = Pair (f a) (f b)
+  
+instance Applicative Pair where
+  pure x = Pair x x
+  (Pair f g) <*> (Pair x y) = Pair (f x) (g y)
+
+
+-- 2. This should look familiar.
+data Two a b = Two a b
+
+instance Functor (Two a) where
+  fmap f (Two a b) = Two a (f b)
+  
+instance (Monoid a) => Applicative (Two a) where
+  pure x = Two mempty x
+  (Two a f) <*> (Two b x) = (Two (mappend a b) (f x))
+
+
+-- 3.
+data Three a b c = Three a b c
+
+instance Functor (Three a b) where
+  fmap f (Three x y z) = Three x y (f z)
+
+{-
+  -- TODO module compile errors
+instance (Monoid a, Monoid b) => Applicative (Three a b) where
+  pure x = Three mempty mempty x
+  -- (Three a b f)  <*> (Three c d x) = undefined
+  -- (Three a b f) <*> (Three c d x) = Three (mappend a c) (mappend b d) (f x)
+-}
+
+-- 4.
+data Three' a b = Three' a b b
+
+instance Functor (Three' a) where
+  fmap f (Three' x y z) = (Three' x (f y) (f z))
+  
+instance (Monoid a) => Applicative (Three' a) where
+  pure x = Three' mempty x x
+  (Three' a f g) <*> (Three' b x y) = Three' (mappend a b) (f x) (g y)
+
+
+-- 5.
+
+data Four a b c d = Four a b c d
+{-
+instance Functor (Four a b c) where
+  fmap f (Four w x y z) = (Four w x y (f z))
+
+
+-- TODO module compile errors
+instance (Monoid a, Monoid b, Monoid c) => Applicative (Four a b c) where
+  pure x = Four mempty mempty mempty x
+  (Four a b c fu) <*> (Four d e f x) = Four (mappend a d) (mappend b e) (mappend c f) (fu x)
+-}
+
+
+-- 6.
+data Four' a b = Four' a a a b
+
+instance Functor (Four' a) where
+  fmap f (Four' w x y z) = undefined
+  
+instance (Monoid a) => Applicative (Four' a) where
+  pure x = Four' mempty mempty mempty x
+  (Four' a b c fu) <*> (Four' d e f x) = Four' (mappend a d) (mappend b e) (mappend c f) (fu x)
+
+
+-- Combinations
+
+-- liftA :: Applicative f => (a -> b) -> f a -> f b
+
+-- liftA2 :: Applicative f => (a -> b -> c) -> f a -> f b -> f c
+
+-- liftA3 :: Applicative f => (a -> b -> c -> d) -> f a -> f b -> f c -> f d
+
+
+--stops :: String
+stops :: [Char]
+stops = unpacked "pbtdkg"
+--
+--vowels :: String
+vowels :: [Char]
+vowels =  unpacked "aeiou"
+
+combos :: [a] -> [b] -> [c] -> [(a, b, c)]
+combos xs ys zs = liftA3 (,,) xs ys zs
+
+combos' :: [a] -> [b] -> [c] -> [(a, b, c)]
+combos' xs ys zs = (,,) <$> xs <*> ys <*> zs
+
+combosSolution = [('a','p','a'),('a','p','e'),('a','p','i'),('a','p','o'),('a','p','u'),('a','b','a'),('a','b','e'),('a','b','i'),('a','b','o'),('a','b','u'),('a','t','a'),('a','t','e'),('a','t','i'),('a','t','o'),('a','t','u'),('a','d','a'),('a','d','e'),('a','d','i'),('a','d','o'),('a','d','u'),('a','k','a'),('a','k','e'),('a','k','i'),('a','k','o'),('a','k','u'),('a','g','a'),('a','g','e'),('a','g','i'),('a','g','o'),('a','g','u'),('e','p','a'),('e','p','e'),('e','p','i'),('e','p','o'),('e','p','u'),('e','b','a'),('e','b','e'),('e','b','i'),('e','b','o'),('e','b','u'),('e','t','a'),('e','t','e'),('e','t','i'),('e','t','o'),('e','t','u'),('e','d','a'),('e','d','e'),('e','d','i'),('e','d','o'),('e','d','u'),('e','k','a'),('e','k','e'),('e','k','i'),('e','k','o'),('e','k','u'),('e','g','a'),('e','g','e'),('e','g','i'),('e','g','o'),('e','g','u'),('i','p','a'),('i','p','e'),('i','p','i'),('i','p','o'),('i','p','u'),('i','b','a'),('i','b','e'),('i','b','i'),('i','b','o'),('i','b','u'),('i','t','a'),('i','t','e'),('i','t','i'),('i','t','o'),('i','t','u'),('i','d','a'),('i','d','e'),('i','d','i'),('i','d','o'),('i','d','u'),('i','k','a'),('i','k','e'),('i','k','i'),('i','k','o'),('i','k','u'),('i','g','a'),('i','g','e'),('i','g','i'),('i','g','o'),('i','g','u'),('o','p','a'),('o','p','e'),('o','p','i'),('o','p','o'),('o','p','u'),('o','b','a'),('o','b','e'),('o','b','i'),('o','b','o'),('o','b','u'),('o','t','a'),('o','t','e'),('o','t','i'),('o','t','o'),('o','t','u'),('o','d','a'),('o','d','e'),('o','d','i'),('o','d','o'),('o','d','u'),('o','k','a'),('o','k','e'),('o','k','i'),('o','k','o'),('o','k','u'),('o','g','a'),('o','g','e'),('o','g','i'),('o','g','o'),('o','g','u'),('u','p','a'),('u','p','e'),('u','p','i'),('u','p','o'),('u','p','u'),('u','b','a'),('u','b','e'),('u','b','i'),('u','b','o'),('u','b','u'),('u','t','a'),('u','t','e'),('u','t','i'),('u','t','o'),('u','t','u'),('u','d','a'),('u','d','e'),('u','d','i'),('u','d','o'),('u','d','u'),('u','k','a'),('u','k','e'),('u','k','i'),('u','k','o'),('u','k','u'),('u','g','a'),('u','g','e'),('u','g','i'),('u','g','o'),('u','g','u')]
+
+combosTest = once $ (combos vowels stops vowels) == combosSolution
+combosSizeTest = once $ length (combos vowels stops vowels) == 150
+
+combos'Test = once $ (combos' vowels stops vowels) == combosSolution
+combos'SizeTest = once $ length (combos' vowels stops vowels) == 150
