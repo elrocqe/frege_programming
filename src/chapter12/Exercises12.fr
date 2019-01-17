@@ -14,7 +14,6 @@ import frege.test.QuickCheck
 -- String processing
 
 -- 1.
-
 notThe :: String -> Maybe String
 notThe xs = if xs == "the" then Nothing else (Just xs)
 
@@ -22,25 +21,39 @@ notTheTest1 = once $ notThe "the" == Nothing
 notTheTest2 = once $ notThe "blahtheblah" == Just "blahtheblah"
 notTheTest3 = once $ notThe "woot" == Just "woot"
 
+replaceSingleThe :: String -> String
+replaceSingleThe xs = case notThe xs of
+  Nothing  -> "a"
+  (Just x) -> x
+  
+replaceThe :: String -> String
+replaceThe xs = unwords (map replaceSingleThe (words xs))
 
---splitWords :: [Char] -> [Char] -> [[]Char] -> a
---splitWords (x:xs) w ws = if (x == ' ') then (splitWords xs [] ((w ++ [x]) : ws)) else (splitWords xs (w ++ [x]) ws)
--- TODO
---splitWordsTest = once $ splitWords (unpacked "the cow loves us") [] [] == ["the", "cat", "loves", "us"]
-
+replaceTheTest = once $ replaceThe "the cow loves us" == "a cow loves us"
 
 -- 2.
-replaceThe :: String -> String
-replaceThe = undefined
--- TODO
+countTheBeforeVowel :: String -> Int
+countTheBeforeVowel xs =  go (words xs) 0 False where
+  go :: [String] -> Int -> Bool -> Int
+  go [] n s = n
+  go (x:xs) n s =
+    if (s)
+    then 
+      case (isVowel $ head x) of
+        True   -> go xs (n+1) False
+        False  ->
+         case notThe x of
+           Nothing  -> go xs n True
+           (Just x) -> go xs n False    
+    else
+      case notThe x of
+	    Nothing  -> go xs n True
+	    (Just x) -> go xs n False
 
---replaceTheTest = once $ replaceThe "the cow loves us" == "a cow loves us"
-
-countTheBeforeVowel :: String -> Integer
-countTheBeforeVowel = undefined
-
---countTheBeforeVowelsTest1 = once $ countTheBeforeVowel "the cow" == 0
---countTheBeforeVowelsTest2 = once $ countTheBeforeVowel "the evil cow" == 1
+countTheBeforeVowelsTest1 = once $ countTheBeforeVowel "the cow" == 0
+countTheBeforeVowelsTest2 = once $ countTheBeforeVowel "the evil cow" == 1
+countTheBeforeVowelsTest3 = once $ countTheBeforeVowel "the evil cow and the other one " == 2
+countTheBeforeVowelsTest4 = once $ countTheBeforeVowel "the evil cow and the the other one " == 2
 
 
 -- 3.
@@ -61,17 +74,27 @@ derive Eq Word'
 derive Show Word'
 
 vowels = "aeiou"
+consonants = "bcdfghjklmnpqrstvwxyz"
 
--- TODO
---mkWord :: String -> Maybe Word'
---mkWord s = if (vs > cs) then Nothing else (Just (Word' s))
---    where (vs, cs) = foldr countLettersByType (0,0) (unpacked s)
+isConsonant :: Char -> Bool
+isConsonant c = c `elem` (unpacked consonants)
 
-vs = 1
-cs = 1
+mkWord :: String -> Maybe Word'
+mkWord xs = 
+  if (vs > cs)
+  then Nothing
+  else (Just (Word' xs))
+    where (vs, cs) = countLettersByType xs
+    
+mkWordTest1 = once $ mkWord "example" == Just (Word' "example")
+mkWordTest2 = once $ mkWord "aaouts" == Nothing
 
-countLettersByType :: (Int, Int) -> [Char] -> (Int, Int)
-countLettersByType (vs, cs) (x:xs) =  if (isVowel x) then (vs + 1, cs) else (vs, cs + 1)
+countLettersByType :: String -> (Int, Int)
+countLettersByType xs = (vs, cs) where
+  vs = length (filter isVowel (unpacked xs))
+  cs = length (filter isConsonant (unpacked xs))
+  
+countLettersByTypeTest = once $ countLettersByType "example" == (3, 4)
 
 
 -- It's only Natural
@@ -148,46 +171,52 @@ listToMaybe :: [a] -> Maybe a
 listToMaybe [] = Nothing
 listToMaybe (x:xs) = Just x
 
---TODO Compiler error
-{-
+-- create typed empty entities to ensure compiler can infer correct type
+emptyIntList :: [Int]
+emptyIntList = []
+
+emptyIntMaybe :: Maybe Int
+emptyIntMaybe = Nothing
+
 listToMaybeTest1 = once $ listToMaybe [1, 2, 3] == Just 1
-listToMaybeTest2 = once $ listToMaybe [] == Nothing
--}
+listToMaybeTest2 = once $ listToMaybe emptyIntList == Nothing
+listToMaybeTest3 = once $ listToMaybe [] == emptyIntMaybe
+
 
 maybeToList :: Maybe a -> [a]
 maybeToList Nothing  = []
 maybeToList (Just a) = [a]
 
-{-
 maybeToListTest1 = once $ maybeToList (Just 1) == [1]
-maybeToListTest2 = once $ maybeToList Nothing == []
--}
+maybeToListTest2 = once $ maybeToList emptyIntMaybe == []
+maybeToListTest3 = once $ maybeToList Nothing == emptyIntList
+
 
 -- 5.
--- >>> catMaybes [Just 1, Nothing, Just 2]
--- [1, 2]
--- >>> let xs = take 3 $ repeat Nothing
--- >>> catMaybes xs
--- []
 catMaybes :: [Maybe a] -> [a]
+catMaybes [] = []
 catMaybes (Nothing:xs) = catMaybes xs
-catMaybes ((Just a):xs) = a : catMaybes xs
+catMaybes ((Just x):xs) = [x] ++ catMaybes xs
 
-{-
+typedNothing :: Maybe Int
+typedNothing = Nothing
+-- use typed instance to avoid ambiguous type error in test
+
 catMaybesTest1 = once $ catMaybes [Just 1, Nothing, Just 2] == [1, 2]
-catMaybesTest2 = once $ catMaybes (take 3 $ repeat Nothing) == []
--}
+catMaybesTest2 = once $ catMaybes (take 3 $ repeat typedNothing) == []
 
 -- 6.
 flipMaybe :: [Maybe a] -> Maybe [a]
-flipMaybe (Nothing:xs) = Nothing
--- TODO ???
---flipMaybe ((Just a):xs) = if ((flipMaybe xs) == Nothing) then Nothing else Just (a:xs)
+flipMaybe [] = Just []
+flipMaybe (Nothing:_) = Nothing
+flipMaybe ((Just x):xs) =
+  case flipMaybe xs of
+    Nothing -> Nothing
+    Just ys -> Just ([x]  ++ ys)
 
-{-
 flipMaybeTest1 = once $ flipMaybe [Just 1, Just 2, Just 3] == Just [1, 2, 3]
 flipMaybeTest2 = once $ flipMaybe [Just 1, Nothing, Just 3] == Nothing
--}
+
 
 -- Small library for Either
 
@@ -223,10 +252,10 @@ either' f g (Right b) = g b
 eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
 eitherMaybe'' f e  = either' (\_ -> Nothing) (\b -> (Just (f b))) e
 
-{-
-iterateTest = once $ take 10 $ (iterate (+1) 0) == [0,1,2,3,4,5,6,7,8,9]
-unfoldsTest = once $ take 10 $ (unfoldr (\b -> Just (b, b+1)) 0) == [0,1,2,3,4,5,6,7,8,9]
--}
+-- Unfolds
+iterateTest = once $ (take 10 $ (iterate (+1) 0)) == [0,1,2,3,4,5,6,7,8,9]
+unfoldsTest = once $ (take 10 $ (unfoldr (\b -> Just (b, b+1)) 0)) == [0,1,2,3,4,5,6,7,8,9]
+
 
 -- Why bother?
 
@@ -272,20 +301,18 @@ myUnfoldr :: (b -> Maybe (a, b)) -> b -> [a]
 myUnfoldr f b = myUnfoldr' (f b) f b
 
 myUnfoldr' (Nothing) _ _ = []
-myUnfoldr' (Just (new_a, new_b)) f b = new_a : myUnfoldr f b
+myUnfoldr' (Just (new_a, new_b)) f b = new_a : myUnfoldr f new_b
 
 --  unfoldr :: (b -> Maybe (a, b)) -> b -> [a]
 
 -- 3.
- -- It helps to have the
-     -- types in front of you
-     -- myUnfoldr :: (b -> Maybe (a, b))
--- -> b
--- -> [a]
-betterIterate :: (a -> a) -> a -> [a]
-betterIterate f x = undefined --myUnfoldr ...?
+-- It helps to have the types in front of you
+-- myUnfoldr :: (b -> Maybe (a, b)) -> b -> [a]
 
---betterIterateTest = once $ (take 10 $ betterIterate (+1) 0) == [0,1,2,3,4,5,6,7,8,9]
+betterIterate :: (a -> a) -> a -> [a]
+betterIterate f x = myUnfoldr (\a -> Just (a, f a)) x
+
+betterIterateTest = once $ (take 10 $ betterIterate (+1) 0) == [0,1,2,3,4,5,6,7,8,9]
 
 -- Finally something other than a list!
 
@@ -296,13 +323,21 @@ derive Show (BinaryTree a)
 
 -- 1. Write unfold for BinaryTree.
 unfold :: (a -> Maybe (a,b,a)) -> a -> BinaryTree b
-unfold = undefined
---unfold f a = if ((f a) == Just) then Leaf else (Node (unfold f l) m (unfold f r)
+unfold f a = unfold' (f a)
+  where 
+    unfold' (Nothing)        = Leaf
+    unfold' (Just (l, m, r)) = (Node (unfold f l) m (unfold f r))
 
 -- 2
---treeBuild :: Integer -> BinaryTree Integer
---treeBuild i = if (i < 0) then Leaf else (unfold nodeBuild 0)
+    
+treeBuild i = unfold nodeBuild 0
+  where
+    nodeBuild c = if (i == c) then Nothing else (Just (i + 1, i, i + 1))
 
+treeBuildTest1 = once $ (treeBuild 0) == Leaf
+treeBuildTest2 = once $ treeBuild 1 == Node Leaf 0 Leaf
+treeBuildTest3 = once $ treeBuild 2 == Node (Node Leaf 1 Leaf) 0 (Node Leaf 1 Leaf)
+treeBuildTest4 = once $ treeBuild 3 == Node (Node (Node Leaf 2 Leaf) 1 (Node Leaf 2 Leaf)) 0 (Node (Node Leaf 2 Leaf) 1 (Node Leaf 2 Leaf))
+-- TODO StackOverflowException
 
-nodeBuild :: Int -> Int -> Maybe (Int,Int,Int)
-nodeBuild i c = if (i == c) then Nothing else Just (i + 1, i, i + 1)
+main = println $ treeBuild 1

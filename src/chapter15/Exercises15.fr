@@ -1,6 +1,7 @@
 module chapter15.Exercises15 where
 
 import Data.Monoid
+import Data.wrapper.Num
 import frege.test.QuickCheck
 
 -- Semigroup exercises
@@ -166,28 +167,35 @@ type OrAssoc = Or String String -> Or String String -> Or String String -> Bool
 
 orAssocTest = property (semigroupAssoc :: OrAssoc)
 
+testFst :: Or Int Int
+testFst = Fst 1
+testSnd :: Or Int Int
+testSnd = Snd 1 
+-- use typed instaces to test ambiguous cases
 
--- TODO Ambiguous Type Eq
 orTest1 = once $ Fst 1 <> Snd 2 == Snd 2
--- orTest2 = once $ Fst 1 <> Fst 2 == Fst 2
+orTest2 = once $ testFst <> Fst 2 == Fst 2
 orTest3 = once $ Snd 1 <> Fst 2 == Snd 1
--- orTest4 = once $ Snd 1 <> Snd 2 == Snd 1
+orTest4 = once $ testSnd <> Snd 2 == Snd 1
 
 -- 9.
-{- TODO
-newtype Combine a b = Combine { unCombine :: (a -> b) }
+data Combine a b = Combine { unCombine :: (a -> b) }
 
+f :: Combine Int (Sum Int)
 f = Combine $ \n -> Sum (n + 1)
+
+g :: Combine Int (Sum Int)
 g = Combine $ \n -> Sum (n - 1)
 
-combineTest1 = once $ unCombine (f <> g) $ 0 == Sum {getSum = 0}
-combineTest2 = once $ unCombine (f <> g) $ 1 == Sum {getSum = 2}
-combineTest3 = once $ unCombine (f <> f) $ 1 == Sum {getSum = 4}
-combineTest4 = once $ unCombine (g <> f) $ 1 == Sum {getSum = 2}
--} 
+--combineTest1 = once $ Sum.unwrap Combine.unCombine (f <> g) $ 0 == 0
+--combineTest2 = once $ Sum.unwrap Combine.unCombine (f <> g) $ 1 == 2
+-- combineTest3 = once $ Sum.unwrap Combine.unCombine (f <> f) $ 1 == 4
+--combineTest4 = once $ Sum.unwrap Combine.unCombine (g <> f) $ 1 == 2
+-- TODO
+
     
 -- 10.
-newtype Comp a = Comp { unComp :: (a -> a) }
+data Comp a = Comp { unComp :: (a -> a) }
 
 instance Semigroup a => Semigroup (Comp a) where
    mappend (Comp f) (Comp g) = Comp (f . g)
@@ -203,7 +211,6 @@ instance (Semigroup a, Semigroup b) => Semigroup (Validation a b) where
   mappend (Failure a) (Success b) = Failure a
   mappend (Success a) (Failure b) = Failure b
   mappend (Success a) (Success b) = Success (a <> b)
---  (<>) = undefined
 
 type ValidationAssoc =
   Validation String Int -> Validation String Int -> Validation String Int -> Bool
@@ -290,7 +297,6 @@ boolDisjMLITest   = property (mli :: BoolDisj -> Bool)
 boolDisjMRITest   = property (mlr :: BoolDisj -> Bool)
 
 -- 6.
-newtype Combine a b = Combine { unCombine :: (a -> b) }
 --f = Combine $ \n -> Sum (n + 1)
 --unCombine (mappend f mempty) $ 1 == Sum {getSum = 2}
 instance (Semigroup a, Semigroup b, Monoid a, Monoid b) => Monoid (Combine a b) where
@@ -315,7 +321,7 @@ instance Monoid a => Monoid (Mem s a) where
   mempty = undefined
   mappend = undefined
 
-f = Mem $ \s -> ("hi", s + 1)
+f' = Mem $ \s -> ("hi", s + 1)
 
 {-
 main = do

@@ -1,10 +1,6 @@
 module chapter11.Code11 where
 
 import frege.test.QuickCheck
---import Data.Int
-
-main :: IO () 
-main = println "Code11"
 
 -- 11.5 Data constructors and values
 
@@ -140,7 +136,6 @@ derive Show MyType
 -- 11.8 What makes these datatypes algebraic?
 
 -- Exercises: Cardinality
--- TODO
 -- 1. 
 -- data PugType = PugData
 -- cardinality = 1
@@ -162,7 +157,8 @@ data Example = MakeExample
 derive Show Example
 
 -- Exercises: For Example
--- TODO
+data IntExample a = MakeIntExample Int
+derive Show (IntExample Int)
 
 -- Unary constructors
 data Goats = Goats Int
@@ -174,7 +170,7 @@ derive Show Goats
 tooManyGoats :: Int -> Bool
 tooManyGoats n = n > 42
 
-newtype Goats' = Goats' Int
+data Goats' = Goats' Int
 derive Eq Goats'
 derive Show Goats'
 
@@ -211,11 +207,22 @@ derive Show Goats2
 instance TooMany1 Goats2 where
     tooMany1 (Goats2 n) = tooMany1 n
         
-
--- TODO Pragma
-
 -- Exercises: Logic Goats
--- TODO
+-- 1.
+{-
+instance TooMany (Int, String) where
+    tooMany (n, s) = n > 42
+-}
+  
+-- 2.
+{-
+instance TooMany (Int, Int) where
+    tooMany (n1, n2) = (n1 + n2) > 42
+-}
+-- 3.
+instance (Num a, TooMany a) => TooMany (a, a) where
+    tooMany (n1, n2) = (n1 + n2) > 42
+-- Frege: multiple (differently subtyped) instances of (,)-tuple not possible
 
 -- 11.10 Sum types
 -- Exercises: Pity the Bool
@@ -313,7 +320,6 @@ derive Eq GuessWhat
 derive Show GuessWhat
 
 
--- TODO Compiler errors
 data Id a = MkId a
 derive Eq (Id a)
 derive Show (Id a)
@@ -565,12 +571,11 @@ data FarmerRec =
               , farmerType :: FarmerType }
 derive Show FarmerRec
 
--- TODO FREGE CHECK
---isDairyFarmerRec :: FarmerRec -> Bool
---isDairyFarmerRec farmer =
---    case farmerType farmer of
---        DairyFarmer -> True
---        _           -> False
+isDairyFarmerRec :: FarmerRec -> Bool
+isDairyFarmerRec farmer =
+    case FarmerRec.farmerType farmer of
+        DairyFarmer -> True
+        _           -> False
 
 -- Accidental bottoms from records
 
@@ -603,33 +608,13 @@ derive Show Automobile
 
 -- identical to (a, b, c, d)
 data Silly a b c d = MkSilly a b c d
---derive Show Silly
--- TODO
+derive Show (Silly a b c d)
 
--- TODO 
-
--- data EsResultFound a =
---     EsResultFound { _version :: DocVersion
---               , _source :: a
---               } deriving (Eq, Show)
-
--- TODO 
--- instance (FromJSON a) =>
---    FromJSON (EsResultFound a) where
---        parseJSON (Object v) =
---                EsResultFound
---            <$> v .: "_version"
---            <*> v .: "_source"
---        parseJSON _ = empty
-
--- TODO
 -- 11.17 Binary Tree
-data BinaryTree a =
-      Leaf
-    | Node (BinaryTree a) a (BinaryTree a)
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
 derive Eq (BinaryTree a)
 derive Show (BinaryTree a)
---derive Ord (BinaryTree a)
+derive Ord (BinaryTree a)
 
 insert' :: Ord a
             => a
@@ -729,5 +714,6 @@ foldTree :: (a -> b -> b)
 
 foldTree f b Leaf = b
 foldTree f b (Node left a right) = f a (foldTree f (foldTree f b left) right)
--- TODO check
 
+foldTreeTest1 = once $ (foldTree (`+`) 1 testTree) == 7
+foldTreeTest2 = once $ (foldTree (`*`) 1 testTree) == 6

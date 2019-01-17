@@ -1,4 +1,6 @@
-module Code9 where
+module chapter9.Code9 where
+
+import Test.QuickCheck
 
 main :: IO ()
 main = print (map unpacked myWordsResult)
@@ -8,14 +10,23 @@ main = print (map unpacked myWordsResult)
 myHead :: [t] -> t
 myHead (x : _) = x
 
+myHeadTest = once $ myHead [1, 2, 3] == 1
+
 myTail :: [a] -> [a]
 myTail [] = []
 myTail (_ : xs) = xs
+
+myTailTest1 = once $ (myTail []::[Int]) == []
+myTailTest2 = once $ (myTail [1, 2, 3]) == [2, 3]
 
 safeTail :: [a] -> Maybe [a]
 safeTail [] = Nothing
 safeTail (x:[]) = Nothing
 safeTail (_:xs) = Just xs
+
+--safeTailTest1 = once $ (myTail []::[Int]) == (Nothing::Maybe [Int])
+-- safeTailTest2 = once $ (myTail [1, 2, 3]) == (Just [2, 3])
+-- TODO
 
 safeHead :: [a] -> Maybe a
 safeHead [] = Nothing

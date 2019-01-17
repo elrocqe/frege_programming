@@ -39,32 +39,47 @@ isSubseqOfTest4 = once $ (isSubseqOf (unpacked "blah") (unpacked "halbwoot") == 
 isSubseqOfTest5 = once $ isSubseqOf (unpacked "blah") (unpacked "blawhoot")
 
 -- 2.
--- FREGE TODO String Handling
---capitalizeWords :: [Char] -> [([Char], [Char])]
---capitalizeWords [] = []
---capitalizeWords s = go (words s)
---	where
---		go [] = []
---		go ((x:xs):ws) =  ((x:xs), (toUpper x) : xs) : go ws
-
---capitalizeWords "hello world" == [("hello", "Hello"), ("world", "World")]
+capitalizeWords :: String -> [(String,String)]
+capitalizeWords "" = []
+capitalizeWords s = go (words s)
+  where
+	go :: [String] -> [(String,String)]
+	go [] =  []
+	go (x:xs) =  (input, capitalizedInput) : go xs
+	  where 
+        input = (packed (head (unpacked x):tail (unpacked x)))
+        capitalizedInput = (packed (toUpper (head (unpacked x))  : (tail (unpacked x))))
+        
+capitalizeWordsTest = once $ capitalizeWords "hello world" == [("hello", "Hello"), ("world", "World")]
 
 -- Language exercises
 -- 1.
-capitalizeWord :: [Char] -> [Char]
-capitalizeWord [] = []
-capitalizeWord (x:xs) = (toUpper x) : xs
+capitalizeWord :: String -> String
+capitalizeWord "" = ""
+capitalizeWord s = go (unpacked s)
+  where
+    go (x:xs) = packed ((toUpper x) : xs)
 
-capitalizeWordTest1 = once $ (capitalizeWord (unpacked "Chortle")) == unpacked "Chortle"
-capitalizeWordTest2 = once $ (capitalizeWord (unpacked "chortle")) == unpacked "Chortle"
+capitalizeWordTest1 = once $ (capitalizeWord ("Chortle")) == "Chortle"
+capitalizeWordTest2 = once $ (capitalizeWord ("chortle")) == "Chortle"
 
 -- 2.
---capitalizeParagraph :: [Char] -> [Char]
---capitalizeParagraph =  words . capitalizeWord
+capitalizeParagraph :: String -> String
+capitalizeParagraph xs =  unwords (go (words xs) True)
+  where
+  go []     _ = []
+  go (x:xs) s =
+    if s
+    then (addState (capitalizeWord x))
+    else (addState x)
+    where 
+      addState w =
+        if ((last (unpacked w)) == '.')
+        then (w : (go xs True))
+        else (w : (go xs False))
 
-
--- s = "blah. woot ha."
--- capitalizeParagraph s == "Blah. Woot ha."
+capitalizeParagraphTest1 = once $ capitalizeParagraph "blah. woot ha." == "Blah. Woot ha."
+capitalizeParagraphTest2 = once $ capitalizeParagraph "hello world. new paragraph. another one." == "Hello world. New paragraph. Another one."
 
 -- Phone exercise
 -- 1.
@@ -104,6 +119,7 @@ type Digit = Char
 -- Valid presses: 1 and up
 type Presses = Int
 
+-- TODO
 reverseTaps :: DaPhone
             -> Char
             -> [(Digit, Presses)]

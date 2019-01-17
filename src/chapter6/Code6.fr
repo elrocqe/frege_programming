@@ -5,7 +5,6 @@ module Code6 where
 data TisAnInteger = TisAn Integer
 instance Eq TisAnInteger where
     (==) (TisAn a) (TisAn b) = a == b
-    -- TODO check hashcode
     (hashCode) (TisAn a) = 1
     
 -- FREGE hashCode definitions are needed

@@ -24,6 +24,7 @@ applyList (f:fs) xs = (fmap f xs) ++ (applyList fs xs)
 
 -- Type IO
 pureIO ::a-> IO a
+pureIO x = undefined
 pureIO x = return x
 
 applyIO :: IO (a -> b) -> IO a -> IO b
@@ -66,7 +67,7 @@ instance Functor (Two a) where
   
 instance (Monoid a) => Applicative (Two a) where
   pure x = Two mempty x
-  (Two a f) <*> (Two b x) = (Two (mappend a b) (f x))
+  (Two a f) <*> (Two b x) = Two (mappend a b) (f x)
 
 
 -- 3.
@@ -76,11 +77,11 @@ instance Functor (Three a b) where
   fmap f (Three x y z) = Three x y (f z)
 
 {-
-  -- TODO module compile errors
+ -- TODO module compile errors in frege, issue opened (TODO)
+
 instance (Monoid a, Monoid b) => Applicative (Three a b) where
   pure x = Three mempty mempty x
-  -- (Three a b f)  <*> (Three c d x) = undefined
-  -- (Three a b f) <*> (Three c d x) = Three (mappend a c) (mappend b d) (f x)
+  (Three a b f) <*> (Three c d x) = (Three (mappend a c) (mappend b d) (f x))
 -}
 
 -- 4.
@@ -97,17 +98,16 @@ instance (Monoid a) => Applicative (Three' a) where
 -- 5.
 
 data Four a b c d = Four a b c d
-{-
+
+{- same issue as in exercise 3
+
 instance Functor (Four a b c) where
   fmap f (Four w x y z) = (Four w x y (f z))
 
-
--- TODO module compile errors
 instance (Monoid a, Monoid b, Monoid c) => Applicative (Four a b c) where
   pure x = Four mempty mempty mempty x
   (Four a b c fu) <*> (Four d e f x) = Four (mappend a d) (mappend b e) (mappend c f) (fu x)
 -}
-
 
 -- 6.
 data Four' a b = Four' a a a b

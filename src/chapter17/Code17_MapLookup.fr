@@ -1,0 +1,11 @@
+module chapter17.Code17_MapLookup where
+
+import frege.test.QuickCheck
+import Data.Char
+import Data.List
+import frege.data.TreeMap
+
+c (x:xs) = toUpper x:xs
+
+m = fromList [(3, unpacked "hello")]
+lookupTest4 = once $ (fmap c $ lookup 3 m) == (Just (unpacked "Hello"))

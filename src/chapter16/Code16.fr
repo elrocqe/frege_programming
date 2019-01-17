@@ -437,11 +437,14 @@ incMaybe m = fmap (+1) m
 showMaybe :: Show a => Maybe a -> Maybe String
 showMaybe s = fmap show s
 
+-- typed nothing to help compiler infer correct type
+nothing :: Maybe Int
+nothing = Nothing
+
 incMaybeTest1 = once $ incMaybe (Just 1) == Just 2
---incMaybeTest2 = once $ incMaybe Nothing == Nothing
+incMaybeTest2 = once $ incMaybe nothing == Nothing
 showMaybeTest1 = once $ showMaybe (Just 9001) == Just "9001"
---showMaybeTest2 = once $ showMaybe Nothing == Nothing
--- TODO ambiguous type
+showMaybeTest2 = once $ showMaybe nothing == Nothing
 
 incMaybe'' :: Num a => Maybe a -> Maybe a
 incMaybe'' = fmap (+1)
@@ -461,10 +464,9 @@ liftedShow :: (Functor f, Show a) => f a -> f String
 liftedShow = fmap show
 
 liftedIncTest1 = once $ liftedInc (Just 1) == Just 2
---liftedIncTest2 = once $ liftedInc Nothing == Nothing
+liftedIncTest2 = once $ liftedInc nothing == Nothing
 liftedShowTest1 = once $ liftedShow (Just 1) == Just "1"
---liftedShowTest2 = once $ liftedShow Nothing == Nothing
--- TODO ambiguous type
+liftedShowTest2 = once $ liftedShow nothing == Nothing
 
 liftedIncListTest = once $ liftedInc [1..5] == [2,3,4,5,6]
 liftedShowListTest = once $ liftedShow [1..5] == ["1","2","3","4","5"]

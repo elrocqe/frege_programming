@@ -1,0 +1,293 @@
+module chapter18.Code18 where
+
+import frege.test.QuickCheck
+
+
+fmapTest = once $ fmap (+1) [1..3] == [2,3,4]
+returnTest = once $ ([1..3] >>= return . (+1)) == [2,3,4]
+
+andOne x = [x, 1]
+andOneTest = once $ andOne 10 == [10,1]
+
+fmapAndOneTest = once $ fmap andOne [4, 5, 6] == [[4,1],[5,1],[6,1]]
+
+concatFmapAndOneTest = once $ (concat $ fmap andOne [4, 5, 6]) == [4,1,5,1,6,1]
+
+liftA2Test = once $ liftA2 (,) (Just 3) (Just 5) == Just (3,5)
+liftM2Test = once $ liftM2 (,) (Just 3) (Just 5) == Just (3,5)
+
+zipWithTest = once $ zipWith (+) [3, 4] [5, 6] == [8,10]
+liftA2Test' = once $ liftA2 (+) [3, 4] [5, 6] == [8,9,9,10]
+
+liftM3Test = once $ liftM3 (,,) [1, 2] [3] [5, 6] == [(1,3,5),(1,3,6),(2,3,5),(2,3,6)]
+zipWith3Test = once $ zipWith3 (,,) [1, 2] [3] [5, 6] == [(1,3,5)]
+
+sequencing :: IO ()
+sequencing = do
+  putStrLn "blah"
+  putStrLn "another thing"
+
+sequencing' :: IO ()
+sequencing' =
+  putStrLn "blah" >>
+  putStrLn "another thing"
+
+sequencing'' :: IO ()
+sequencing'' =
+  putStrLn "blah" *>
+  putStrLn "another thing"
+
+binding :: IO ()
+binding = do
+  name <- getLine
+  putStrLn name
+  
+binding' :: IO ()
+binding' =
+  getLine >>= putStrLn
+  
+-- When fmap alone isn’t enough
+  
+-- TODO
+
+
+-- 18.4 Examples of Monad use
+
+-- List
+
+twiceWhenEven :: [Integer] -> [Integer]
+twiceWhenEven xs = do
+  x <- xs
+  if even x
+    then [x*x, x*x]
+    else [x*x]
+
+twiceWhenEvenTest = once $ twiceWhenEven [1..3] == [1,4,4,9]
+
+twiceWhenEven' :: [Integer] -> [Integer]
+twiceWhenEven' xs = do
+  x <- xs
+  if even x
+    then [x*x, x*x]
+    else []
+
+twiceWhenEven'Test = once $ twiceWhenEven' [1..3] == [4,4]
+
+-- Maybe Monad
+
+data Cow = Cow { name :: String,
+                 age :: Int,
+                 weight :: Int}
+derive Eq Cow
+derive Show Cow
+
+noEmpty :: String -> Maybe String
+noEmpty "" = Nothing
+noEmpty str = Just str
+
+noNegative :: Int -> Maybe Int
+noNegative n
+  | n >= 0 = Just n
+  | otherwise = Nothing
+  
+-- if Cow's name is Bess, must be under 500
+weightCheck :: Cow -> Maybe Cow
+weightCheck c =
+  let 
+    w = Cow.weight c
+    n = Cow.name c
+    -- TODO check how to do Cow.accessors in haskell
+  in
+    if n == "Bess" && w > 499
+    then Nothing
+    else Just c
+
+mkSphericalCow :: String -> Int -> Int -> Maybe Cow
+mkSphericalCow name' age' weight' =
+  case noEmpty name' of
+    Nothing -> Nothing
+    Just nammy ->
+      case noNegative age' of
+        Nothing -> Nothing
+        Just agey ->
+          case noNegative weight' of
+            Nothing -> Nothing
+            Just weighty -> weightCheck (Cow nammy agey weighty)
+            
+mkSphericalCowTest1 = once $ mkSphericalCow "Bess" 5 499 == Just (Cow {name = "Bess", age = 5, weight = 499})
+mkSphericalCowTest2 = once $ mkSphericalCow "Bess" 5 500 == Nothing
+
+
+
+mkSphericalCow' :: String -> Int -> Int -> Maybe Cow
+mkSphericalCow' name' age' weight' = do
+  nammy <- noEmpty name'
+  agey <- noNegative age'
+  weighty <- noNegative weight'
+  weightCheck (Cow nammy agey weighty)
+
+mkSphericalCow'Test1 = once $ mkSphericalCow' "Bess" 5 500 == Nothing
+mkSphericalCow'Test2 = once $ mkSphericalCow' "Bess" 5 499 == Just (Cow {name = "Bess", age = 5, weight = 499})
+
+mkSphericalCow'' :: String -> Int -> Int -> Maybe Cow
+mkSphericalCow'' name' age' weight' =
+  noEmpty name' >>=
+  \nammy ->
+    noNegative age' >>=
+    \agey ->
+      noNegative weight' >>=
+      \weighty ->
+      weightCheck (Cow nammy agey weighty)
+
+mkSphericalCow''Test1 = once $ mkSphericalCow'' "Bess" 5 500 == Nothing
+mkSphericalCow''Test2 = once $ mkSphericalCow'' "Bess" 5 499 == Just (Cow {name = "Bess", age = 5, weight = 499})
+
+
+f :: Integer -> Maybe Integer
+f 0 = Nothing
+f n = Just n
+
+g :: Integer -> Maybe Integer
+g i = 
+  if even i
+  then Just (i + 1)
+  else Nothing
+  
+h :: Integer -> Maybe String
+h i = Just ("10191" ++ show i)
+
+doSomething' n = do
+  a <- f n
+  b <- g a
+  c <- h b
+  pure (a, b, c)
+  
+  
+-- Exploding a spherical cow
+
+instance Monad Maybe where
+  -- return x = Just x
+  Nothing >>= _ = Nothing
+  (Just x) >>= k = k x
+
+    
+
+
+-- TODO
+
+-- Fail fast, like an overfunded startup
+
+-- TODO
+
+ --Either
+ 
+
+-- years ago
+type Founded = Int
+
+-- number of programmers
+type Coders = Int
+
+data SoftwareShop = Shop {founded :: Founded,
+                          programmers :: Coders}
+derive Eq SoftwareShop
+derive Show SoftwareShop
+
+data FoundedError =
+    NegativeYears Founded
+  | TooManyYears Founded
+  | NegativeCoders Coders
+  | TooManyCoders Coders
+  | TooManyCodersForYears Founded Coders
+
+derive Eq FoundedError
+derive Show FoundedError
+
+
+validateFounded :: Int -> Either FoundedError Founded
+validateFounded n
+  | n < 0 = Left $ NegativeYears n
+  | n > 500 = Left $ TooManyYears n
+  | otherwise = Right n
+
+-- Tho, many programmers *are* negative.
+validateCoders :: Int -> Either FoundedError Coders
+validateCoders n
+  | n < 0 = Left $ NegativeCoders n
+  | n > 5000 = Left $ TooManyCoders n
+  | otherwise = Right n
+  
+mkSoftware :: Int -> Int -> Either FoundedError SoftwareShop
+mkSoftware years coders = do
+  founded <- validateFounded years
+  programmers <- validateCoders coders
+  if programmers > div founded 10
+    then Left $
+           TooManyCodersForYears
+           founded programmers
+    else Right $ Shop founded programmers
+    
+mkSoftwareTest1 = once $ mkSoftware 0 0 == Right (Shop {founded = 0, programmers = 0})
+mkSoftwareTest2 = once $ mkSoftware (-1) 0 == Left (NegativeYears (-1))
+mkSoftwareTest3 = once $ mkSoftware (-1) (-1) == Left (NegativeYears (-1))
+mkSoftwareTest4 = once $ mkSoftware 0 (-1) == Left (NegativeCoders (-1))
+mkSoftwareTest5 = once $ mkSoftware 500 0 == Right (Shop {founded = 500, programmers = 0})
+mkSoftwareTest6 = once $ mkSoftware 501 0 == Left (TooManyYears 501)
+mkSoftwareTest7 = once $ mkSoftware 501 501 == Left (TooManyYears 501)
+mkSoftwareTest8 = once $ mkSoftware 100 5001 == Left (TooManyCoders 5001)
+mkSoftwareTest9 = once $ mkSoftware 0 500 == Left (TooManyCodersForYears 0 500)
+
+-- TODO add code 
+-- import Control.Monad (ap)
+
+-- TODO
+
+-- Short Exercise: Either Monad
+
+data Sum a b = First a | Second b
+derive Eq (Sum a b)
+derive Show (Sum a b)
+
+instance Functor (Sum a) where
+  fmap f (First a) = (First a)
+  fmap f (Second b) = (Second (f b))
+  
+instance Applicative (Sum a) where
+  pure x = Second x
+  (First a ) <*> (First a') = First a
+  (First a)  <*> (Second b) = First a
+  (Second f) <*> (First a) = First a
+--  (Second f) <*> (Second z) = fmap f z
+-- TODO
+  
+instance Monad (Sum a) where
+  (>>=) (First a)  _ = First a
+  (>>=) (Second b) f = f b
+  
+-- We’re doing that thing again
+  
+-- TODO
+
+-- 18.6 Application and composition
+
+
+fmapTest1 = once $ fmap ((+1) . (+2)) [1..5] == [4,5,6,7,8]
+fmapTest2 = once $ (fmap (+1) . fmap (+2) $ [1..5]) == [4,5,6,7,8]
+  
+  
+  
+sayHi :: String -> IO String
+sayHi greeting = do
+  putStrLn greeting
+  getLine
+
+readM :: Read a => String -> IO a
+readM = return . read
+
+getAge :: String -> IO Int
+getAge = sayHi >=> readM
+
+askForAge :: IO Int
+askForAge =
+  getAge "Hello! How old are you? "
+  

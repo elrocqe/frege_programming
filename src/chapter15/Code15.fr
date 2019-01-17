@@ -2,6 +2,8 @@ module chapter15.Code15 where
 
 import frege.test.QuickCheck
 import Data.Monoid
+import Data.wrapper.Boolean
+import Data.wrapper.Num
 
 --main :: IO () 
 --main = println "Code15"
@@ -20,53 +22,7 @@ appendTest3 = once $ ((++) "Trout" " goes well with garlic") == "Trout goes well
 appendTest4  = once $ (foldr (++) [] [[1, 2, 3],[4, 5, 6]]) == [1, 2, 3, 4, 5, 6]
 mappendTest4 = once $ (foldr (mappend) mempty [[1, 2, 3],[4, 5, 6]]) == [1, 2, 3, 4, 5, 6]
 
--- add definitions for Any and All, as Data.Semigroup does not exist in Frege
--- (see https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Data.Semigroup.Internal.html#Sum)
-
--- | Boolean monoid under conjunction ('&&').
---
--- >>> getAll (All True <> mempty <> All False)
--- False
---
--- >>> getAll (mconcat (map (\x -> All (even x)) [2,4,6,7,8]))
--- False
-data All = All { getAll :: Bool }
-derive Eq All
-derive Ord All
-derive Show All
-
-instance Semigroup All where
-        mappend (All a) (All b) = All (a && b)
-
-instance Monoid All where
-        mempty = All True
-
-allTest1 = once $ All.getAll (All True <> mempty <> All False) == False
-allTest2 = once $ All.getAll (mconcat (map (\x -> All (even x)) [2,4,6,7,8])) == False
--- FREGE Dot-Notation used
-
--- | Boolean monoid under disjunction ('||').
---
--- >>> getAny (Any True <> mempty <> Any False)
--- True
---
--- >>> getAny (mconcat (map (\x -> Any (even x)) [2,4,6,7,8]))
--- True
-data Any = Any { getAny :: Bool }
-derive Eq Any
-derive Ord Any
-derive Show Any
-
-instance Semigroup Any where
-        mappend (Any a) (Any b) = Any (a || b)
-
-instance Monoid Any where
-        mempty = Any False
-
-anyTest1 = once $ (Any True <> mempty <> Any False) == Any True
-anyTest2 = once $ (mconcat (map (\x -> Any (even x)) [2,4,6,7,8])) == Any True
-
-boolMonoidTest1  = once $ All True <> All True == All {getAll = True}
+boolMonoidTest1  = once $ All True <> All True == All {unwrap = True}
 
 -- 15.5 Examples of using Monoid
 
@@ -94,54 +50,16 @@ instance Monoid a => Monoid (Optional a) where
   mappend _        (Only x) = Only x
   mappend _        _        = Nada
   
--- add definitions for Sum and Product, as Data.Semigroup does not exist in Frege
--- (see https://hackage.haskell.org/package/base-4.12.0.0/docs/src/Data.Semigroup.Internal.html#Sum)
 
--- | Monoid under addition.
---
--- >>> getSum (Sum 1 <> Sum 2 <> mempty)
--- 3
-data Sum a = Sum { getSum :: a }
-derive Eq (Sum a)
-derive Ord (Sum a)
-derive Show (Sum a)
-
-instance Num a => Semigroup (Sum a) where
-        mappend (Sum a) (Sum b) = Sum (a + b)
-        stimes n (Sum a) = Sum (fromIntegral n * a)
-
-instance Num a => Monoid (Sum a) where
-        mempty = Sum 0
-        
-sumTest = once $ Sum.getSum (Sum 1 <> Sum 2 <> mempty) == 3
-
--- | Monoid under multiplication.
---
--- >>> getProduct (Product 3 <> Product 4 <> mempty)
--- 12
-data Product a = Product { getProduct :: a }
-derive Eq (Product a)
-derive Ord (Product a)
-derive Show (Product a)
-
-instance Num a => Semigroup (Product a) where
-        mappend (Product a) (Product b) = Product (a * b)
-        stimes n (Product a) = Product (a ^ n)
-
-instance Num a => Monoid (Product a) where
-        mempty = Product 1
-
-productTest = once $ Product.getProduct (Product 3 <> Product 4 <> mempty) == 12
-
-optionalMonoidTest1 = once $ (mappend (Only (Sum 1)) (Only (Sum 1)) == Only (Sum {getSum = 2}))
-optionalMonoidTest2 = once $ (mappend (Only (Product 4)) (Only (Product 2)) == Only (Product {getProduct = 8}))
-optionalMonoidTest3 = once $ (mappend (Only (Sum 1)) Nada == Only (Sum {getSum = 1}))
+optionalMonoidTest1 = once $ (mappend (Only (Sum 1)) (Only (Sum 1)) == Only (Sum {unwrap = 2}))
+optionalMonoidTest2 = once $ (mappend (Only (Product 4)) (Only (Product 2)) == Only (Product {unwrap = 8}))
+optionalMonoidTest3 = once $ (mappend (Only (Sum 1)) Nada == Only (Sum {unwrap = 1}))
 optionalMonoidTest4 = once $ (mappend (Only [1]) Nada == Only [1])
 optionalMonoidTest5 = once $ (mappend Nada (Only (Sum 1)) == Only (Sum 1))
 
-optionalMonoidInfixTest1 = once $ ((Only (Sum 1)) `mappend` (Only (Sum 1)) == Only (Sum {getSum = 2}))
-optionalMonoidInfixTest2 = once $ ((Only (Product 4)) `mappend` (Only (Product 2)) == Only (Product {getProduct = 8}))
-optionalMonoidInfixTest3 = once $ ((Only (Sum 1)) `mappend` Nada == Only (Sum {getSum = 1}))
+optionalMonoidInfixTest1 = once $ ((Only (Sum 1)) `mappend` (Only (Sum 1)) == Only (Sum {unwrap = 2}))
+optionalMonoidInfixTest2 = once $ ((Only (Product 4)) `mappend` (Only (Product 2)) == Only (Product {unwrap = 8}))
+optionalMonoidInfixTest3 = once $ ((Only (Sum 1)) `mappend` Nada == Only (Sum {unwrap = 1}))
 optionalMonoidInfixTest4 = once $ ((Only [1]) `mappend` Nada == Only [1])
 optionalMonoidInfixTest5 = once $ (Nada `mappend` (Only (Sum 1)) == Only (Sum 1)) 
 
@@ -212,11 +130,14 @@ instance Monoid a => Monoid (First' a) where
 firstMappend :: Semigroup a => a -> a -> a
 firstMappend = mappend
 
+-- typed nada to prevent ambiguous type error
+typedNada :: Optional String
+typedNada = Nada
+
 firstMAppendTest1 = once $ firstMappend (First' Nada) (First' (Only "Second")) == First' (Only "Second")
 firstMAppendTest2 = once $ firstMappend (First' (Only "First")) (First' Nada) == First' (Only "First")
 firstMAppendTest3 = once $ firstMappend (First' (Only "First")) (First' (Only "Second")) == First' (Only "First")
---firstMAppendTest4 = once $ firstMappend (First' Nada) (First' Nada) == First' Nada
--- TODO ambiguous type
+firstMAppendTest4 = once $ firstMappend (First' typedNada) (First' Nada) == First' Nada
 
 type FirstMappend = First' String -> First' String -> First' String -> Bool
   
@@ -236,7 +157,6 @@ instance Arbitrary a => Arbitrary (Optional a) where
 first'maTest  = property $ (ma :: FirstMappend)
 
 first'Test1 = once $ First' (Only "1") `mappend` First' Nada == First' {getFirst' = Only "1"}
--- TODO ambiguous type
---first'Test2 = once $ First' Nada `mappend` First' Nada == First' {getFirst' = Nada}
+first'Test2 = once $ (First' typedNada) `mappend` (First' Nada) == First' Nada
 first'Test3 = once $ First' Nada `mappend` First' (Only "2") == First' {getFirst' = Only "2"}
 first'Test4 = once $ First' (Only "1") `mappend` First' (Only "2") == First' {getFirst' = Only "1"}

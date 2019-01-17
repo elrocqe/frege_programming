@@ -1,30 +1,44 @@
 module chapter17.Code17 where
 
 import Data.Monoid
+import Data.wrapper.Num
+import Data.wrapper.Const
 import frege.test.QuickCheck
 import Data.Char
 import Data.List
+import frege.data.List
+
 
 -- 17.4 Applicative functors are monoidal functors
 
 fmapTest = once $ fmap (+1) [1, 2, 3]  == [2,3,4]
---pureTest = once $ pure (+1) <*> [1..3] == [2,3,4]
--- TODO ambiguous type error
+pureTest = once $ (pure (+1) <*> [1..3]) == [2,3,4]
 
--- pureTest1 = once $ pure ([1 :: Int]) == [1]
--- pureTest2 = once $ pure (1 :: Maybe Int) == Just 1
--- pureTest3 = once $ pure (1 :: (Either a Int)) == (Right 1)
--- pureTest4 = once $ pure (1 :: ([a], Int)) == ([],1)
+pureTest1 = once $ pure 1 == [1] -- [Int]
+pureTest2 = once $ pure 1 == Just 1-- Maybe Int
 
---TODO 
+-- typed pure instances to avoid ambiguous type errors
+typedEitherPure :: Either String Int
+typedEitherPure = pure 1
+
+typedTuplePure :: ([String], Int)
+typedTuplePure = pure 1
+
+pureTest3 = once $ typedEitherPure == (Right 1) -- Either a Int
+pureTest4 = once $ typedTuplePure == ([],1) -- ([a], Int)
 
 mappendTest = once $ ([(*2), (*3)] <*> [4, 5]) == [8,10,12,15]
 
 maybeTest1 = once $ (Just (*2) <*> Just 2) == (Just 4)
 maybeTest2 = once $ (Just (*2) <*> Nothing) == Nothing
--- maybeTest3 = once $ (Nothing <*> (Just 2)) == Nothing
--- maybeTest4 = once $ (Nothing <*> Nothing) == Nothing
--- TODO ambiguous types
+
+nothing :: Maybe  (Int->Int)
+nothing = Nothing
+
+maybeTest3 = once $ (nothing <*> (Just 2)) == Nothing 
+
+-- TODO check in ghc
+maybeTest4 = once $ (nothing <*> Nothing) == Nothing
 
 -- Show me the monoids
 
@@ -106,18 +120,8 @@ listApplicativeTest7 = once $ ((max <$> [1, 2]) <*> [1, 4]) == [1,4,2,4]
 listApplicativeTest8 = once $ apply (fmap max [1, 2]) [1, 4] == [1,4,2,4]
 listApplicativeTest9 = once $ liftA2 max [1, 2] [1, 4]  == [1,4,2,4]
 
-
 -- :t lookup
 -- lookup :: Eq a => a -> [(a, b)] -> Maybe b
-
--- FREGE: lookup is not defined in prelude
--- | 'lookup' @key assocs@ looks up a key in an association list.
-lookup                  :: (Eq a) => a -> [(a,b)] -> Maybe b
-lookup _key []          =  Nothing
-lookup  key ((x,y):xys)
-    | key == x          =  Just y
-    | otherwise         =  lookup key xys
-
 
 l = lookup 3 [(3, unpacked "hello")]
 lookupTest1 = once $ l == Just (unpacked "hello")
@@ -125,10 +129,7 @@ lookupTest2 = once $ (fmap length $ l) == Just 5
 c (x:xs) = toUpper x:xs
 lookupTest3 = once $(fmap c $ l) == Just (unpacked "Hello")
 
--- TODO fromList does not exist
--- m = fromList [(3, unpacked "hello")]
--- lookupTest4 = once $ fmap c $ lookup 3 m == Just (unpacked "Hello")
-
+-- see Code17_MapLookup.fr for map-specific lookup
 
 f x = lookup x [ (3, "hello"), (4, "julie"), (5, "kbai")]
 g y = lookup y [ (7, "sup?"), (8, "chris"), (9, "aloha")]
@@ -139,12 +140,11 @@ lookupTest5 = once $ f 3 == Just "hello"
 lookupTest6 = once $ g 8 == Just "chris"
 
 lookupTest7 = once $ ((++) `fmap` (f 3)) `apply` g 7 == Just ("hellosup?")
--- lookupTest7 = once $ ((++) <$> (f 3)) <*> g 7 == Just ("hellosup?")
-lookupTest8 = once $ ((+) `fmap` (h 5)) `apply` m 1  == Just 9007
---lookupTest8 = once $ (+) <$> h 5 <*> m 1  == Just 9007
-lookupTest9 = once $ ((+) `fmap` (h 5)) `apply` m 6  == Nothing
---lookupTest9 = once $ (+) <$> h 5 <*> m 6  == Nothing
--- TODO 
+lookupTest8 = once $ (((++) <$> (f 3)) <*> g 7) == Just ("hellosup?")
+lookupTest9 = once $ ((+) `fmap` (h 5)) `apply` m 1  == Just 9007
+lookupTest10 = once $ ((+) <$> h 5 <*> m 1)  == Just 9007
+lookupTest11 = once $ ((+) `fmap` (h 5)) `apply` m 6  == Nothing
+lookupTest12 = once $ ((+) <$> h 5 <*> m 6)  == Nothing
 
 liftA2Test1 = once $ liftA2 (++) (g 9) (f 4) == Just "alohajulie"
 liftA2Test2 = once $ liftA2 (^) (h 5) (m 4)  == Just 60466176
@@ -152,8 +152,6 @@ liftA2Test3 = once $ liftA2 (*) (h 5) (m 4)  == Just 60
 liftA2Test4 = once $ liftA2 (*) (h 1) (m 1)  == Nothing
 
 -- Exercises: Lookups
-
---TODO
 
 -- 1.
 added :: Maybe Integer
@@ -235,19 +233,17 @@ pure :: a-> fa
 pure :: a -> Id a
 -}
 
--- TODO Identity compile error
 idXs = [1, 2, 3]
 idXs' = [9, 9, 9]
 idTest1 = once $ apply (fmap const idXs) idXs' == [1,1,1,2,2,2,3,3,3]
 idTest2 = once $ (const `fmap` idXs) `apply` idXs' == [1,1,1,2,2,2,3,3,3]
---idTest3 = once $ (const <$> idXs) <*> idXs' == [1,1,1,2,2,2,3,3,3]
--- TODO why does this not work?
+idTest3 = once $ testExpression == [1,1,1,2,2,2,3,3,3] where 
+	testExpression = const <$> idXs <*> idXs'
 
 mkId = Identity
 idTest4 = once $ apply (fmap const (mkId xs)) (mkId xs') == Identity [1,2,3]
 idTest5 = once $ (const `fmap` (mkId xs)) `apply` (mkId xs') == Identity [1,2,3]
--- idTest6 = once $ (const <$> (mkId xs)) <*> (mkId xs') == Identity [1,2,3]
--- TODO why does this not work?
+idTest6 = once $ ((const <$> (mkId xs)) <*> (mkId xs')) == Identity [1,2,3]
 
 -- Exercise: Identity Instance
 
@@ -273,19 +269,18 @@ type C = Constant
 pure :: a -> C e a
 -}
 
--- TODO include or remove 
 {-
-Prelude> let f = Constant (Sum 1)
-Prelude> let g = Constant (Sum 2)
-Prelude> f <*> g
-Constant {getConstant = Sum {getSum = 3}
-Prelude> Constant undefined <*> g
-Constant (Sum {getSum =
-  *** Exception: Prelude.undefined
-Prelude> pure 1
-1
-Prelude> pure 1 :: Constant String Int
-Constant {getConstant = ""}
+-- TODO include or remove 
+--derive Eq Const (Sum Int)
+constantSum1 = Const (Sum 1)
+constantSum2 = Const (Sum 2)
+--constantSumTest = once $ (constantSum1 <*> constantSum2) == Const {get = Sum 3}
+-- failingConstantSumTest = once $ Constant undefined <*> g == undefined  --Constant (Sum {getSum = *** Exception: Prelude.undefined
+
+pureList :: Const Int
+pureList = pure 1
+pureTest' = once $ pureList ==  1
+pureConstantTest = once $ (pure 1 :: (Constant String Int)) == Constant {getConstant = ""}
 -}
 
 -- Exercise: Constant Instance
@@ -363,44 +358,35 @@ toMyList' = foldr Cons Nil
 xs' = toMyList' [1, 2, 3]
 c' = Cons
 myF x = x `c'` (9 `c'` Nil)
-flatMapResult = flatMap myF xs'
--- Cons 1 (Cons 9 (Cons 2 (Cons 9 (Cons 3 (Cons 9 Nil)))))
+flapMapTest = once $ (flatMap myF xs') == Cons 1 (Cons 9 (Cons 2 (Cons 9 (Cons 3 (Cons 9 Nil)))))
 
 -- ZipList Applicative Exercise
 
 take' :: Int -> List a -> List a
-take' = undefined
+take' 0 _ = Nil
+take' n Nil = Nil
+take' n (Cons x xs) = Cons x (take' (n-1) xs)
+
+take'Test = once $ (take' 3 (Cons 1 (Cons 9 (Cons 2 (Cons 9 (Cons 3 (Cons 9 Nil))))))) == Cons 1 (Cons 9 (Cons 2 Nil))
   
-data ZipList' a = ZipList' (List a)
+
+data ZipList' a = ZipList' [a]
 derive Eq (ZipList' a)
 derive Show (ZipList' a)
 
-{-
-frege.tTest.QuickCheck.Checkers doe not exist for Frege (EqProp)
-
-instance Eq a => EqProp (ZipList' a) where
-  xs =-= ys = xs' `eq` ys'
-    where
-      xs' = let (ZipList' l) = xs in take' 3000 l
-      ys' = let (ZipList' l) = ys in take' 3000 l
--}
-      
 instance Functor ZipList' where
   fmap f (ZipList' xs) = ZipList' $ fmap f xs
   
-{- 
---TODO
 instance Applicative ZipList' where
-  pure _ = ZipList mempty
-  (<*>) (ZipList a) (ZipList b) = ZipList (mappend a b)
+  pure x = ZipList' [x]
+  (<*>) (ZipList' fs) (ZipList' xs) = ZipList' ([(f x) | (f, x) <- zip fs xs])
 
 zl' = ZipList'
 z1 = zl' [(+9), (*2), (+8)]
 z1' = zl' [1..3]
-zipListTest1 = once $ z1 <*> z1' == ZipList' [10,4,11]
+zipListTest1 = once $ (z1 <*> z1') == ZipList' [10,4,11]
 z2' = zl' (repeat 1)
-zipListTest2 = once $ z1 <*> z2' == ZipList' [10,2,9]
-  -}
+zipListTest2 = once $ (z1 <*> z2') == ZipList' [10,2,9]
 
 -- Either and Validation Applicative
 

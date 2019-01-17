@@ -1,0 +1,77 @@
+module chapter18.Exercises18 where
+
+import frege.test.QuickCheck
+
+-- 1.
+data Nope a = NopeDotJpg
+
+instance Functor Nope where
+  fmap f NopeDotJpg = NopeDotJpg
+  
+instance Applicative Nope where
+  pure x = NopeDotJpg
+  NopeDotJpg <*> NopeDotJpg = NopeDotJpg
+  
+instance Monad Nope where
+  (>>=) NopeDotJpg _ = NopeDotJpg
+
+-- 2.
+data PhhhbbtttEither b a = Left a | Right b
+
+instance Functor (PhhhbbtttEither a) where
+  fmap f (Left a) = Left (f a)
+  fmap f (Right b) = Right (b)
+  
+instance Applicative (PhhhbbtttEither a) where
+  pure x = Left x 
+  (Left f)  <*> (Left a)  =  Left (f a)
+  (Right b) <*> _         =  Right (b)
+  _         <*> (Right b) =  Right (b)
+
+instance  Monad (PhhhbbtttEither a) where
+  (>>=)  (Left a) f  = f a
+  (>>=)  (Right b) _ = (Right b)
+  
+-- 3.
+data Identity a = Identity a
+derive Eq (Identity a)
+derive Ord (Identity a)
+derive Show (Identity a)
+
+instance Functor Identity where
+  fmap f (Identity a) = Identity (f a)
+  
+instance Applicative Identity where
+  pure x = Identity x
+  (<*>) (Identity f) a = fmap f a
+  
+instance Monad Identity where
+  (>>=) (Identity a) f = f a
+  
+  
+identityFmapTest = once $ fmap (+1) (Identity 1) == (Identity 2)
+identityApplyTest = once $ ((Identity (+1)) <*> (Identity 1)) == (Identity 2)
+-- identityBindTest = once $  (>>=) (Identity "1") (++"1") == "2"
+
+
+-- 4.
+data List a = Nil | Cons a (List a)
+derive Eq (List a)
+derive Ord (List a)
+derive Show (List a)
+
+instance Functor List where
+  fmap f Nil      = Nil
+  fmap f (Cons x xs) = Cons (f x) (fmap f xs)
+  
+instance Applicative List where
+  pure x =  Cons x Nil
+  (<*>) (Cons f fs) (Cons x xs) = Cons (f x) (Cons (fs <*> xs))
+  (<*>) (Nil)        _          = Nil
+  (<*>) _           (Nil)       = Nil
+  
+instance Monad List where
+ -- (>>=) Nil _ = Nil
+  (>>=) xs f = foldr (<*>) [] (fmap f xs)
+  -- TODO
+
